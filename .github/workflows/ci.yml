@@ -26,10 +26,12 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '22'
-      - name: Install the portable compiler toolchain
+      - name: Install the portable compiler toolchain and CJK fonts
         run: |
           sudo apt-get update
-          sudo apt-get install --no-install-recommends -y clang-18 lld-18 libclang-rt-18-dev
+          sudo apt-get install --no-install-recommends -y clang-18 lld-18 libclang-rt-18-dev fonts-noto-cjk fontconfig
+          fc-match -f '%{family}\n' 'sans-serif:lang=zh-cn'
+          fc-match -f '%{family}\n' 'sans-serif:lang=ja'
       - name: Native sanitizers, WASM build, contract and replay tests
         run: npm test
       - name: Real-browser smoke tests at the Pages subpath
