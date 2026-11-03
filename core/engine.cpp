@@ -118,6 +118,7 @@ int use(int a,int b){
     else if(role==Archivist)binary(Verification,a,ref,events[ref].truth,events[ref].subjects);
     return 0;
 }
+int living_role(int role){for(int i=0;i<N;++i)if(p[i].alive&&p[i].role==role)return i;return -1;}
 int command(int op,int a,int b){
     if(status)return 2;
     if(size>CAP-32)return 10;
@@ -136,9 +137,9 @@ int command(int op,int a,int b){
     }
     if(op==4){
         emit(Night);for(int i=0;i<N;++i)p[i].taint=0;
-        if(p[6].alive)for(int j=0;j<N;++j){int i=(day*2+j)%N;
+        if(living_role(Rotmonger)>=0)for(int j=0;j<N;++j){int i=(day*2+j)%N;
             if(p[i].alive&&!p[i].evil&&p[i].role!=Drunk&&p[i].role!=Devilmask){p[i].taint=1;break;}}
-        if(p[9].alive){
+        if(living_role(Whisperer)>=0){
             int victim=-1;for(int i=0;i<N;++i)if(p[i].alive&&!p[i].evil&&p[i].marked){victim=i;break;}
             constexpr int priority[N]={7,1,11,5,0,10,4,3,8,2,6,9};
             if(victim<0)for(int i:priority)if(p[i].alive&&!p[i].evil){victim=i;break;}

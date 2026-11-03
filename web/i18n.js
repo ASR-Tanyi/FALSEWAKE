@@ -3,10 +3,11 @@ import ui from './locales/ui.js';
 import game from './locales/game.js';
 import help from './locales/help.js';
 import rules from './locales/rules.js';
+import nightfall from './locales/nightfall.js';
 export const LOCALE_CODES = ['en','zh-Hans','es','ja'];
 export const LANGUAGE_NAMES = ['English','\u7b80\u4f53\u4e2d\u6587','Espa\u00f1ol','\u65e5\u672c\u8a9e'];
 export const STORAGE_KEY = 'falsewake.language.v1';
-export const MESSAGE_ROWS = [...ui,...game,...help,...rules];
+export const MESSAGE_ROWS = [...ui,...game,...help,...rules,...nightfall];
 export const catalogs = Object.fromEntries(LOCALE_CODES.map((code,i)=>[code,Object.fromEntries(MESSAGE_ROWS.map(row=>[row[0],row[i]]))]));
 export const missingMessages = new Set();
 export function normalizeLocale(value) {
