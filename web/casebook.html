@@ -4,20 +4,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#121719">
-  <meta name="description" content="Two authored FALSEWAKE logic cases. One Good witness is wrong; an enemy may tell the truth. Read, reason, and name the hidden trio.">
+  <meta name="description" content="Two authored FALSEWAKE logic cases. One Good witness is wrong; an enemy may tell the truth. Read, reason, and name the hidden trio." data-i18n-content="Two authored FALSEWAKE logic cases. One Good witness is wrong; an enemy may tell the truth. Read, reason, and name the hidden trio.">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'">
   <title>FALSEWAKE - The sealed casebook</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./casebook.css">
+  <link rel="stylesheet" href="./i18n.css">
 </head>
 <body class="casebook-app">
-  <a class="skip-link" href="#main">Skip to the casebook</a>
-  <div id="app"><main class="loading" id="main"><span class="loading-sigil">F</span><h1>FALSEWAKE</h1><p>Unsealing the casebook...</p></main></div>
+  <a class="skip-link" href="#main" data-i18n="Skip to the casebook">Skip to the casebook</a>
+  <div id="app"><main class="loading" id="main"><span class="loading-sigil">F</span><h1>FALSEWAKE</h1><p data-i18n="Unsealing the casebook...">Unsealing the casebook...</p></main></div>
   <dialog id="modal" aria-labelledby="modal-title"><div id="modal-body"></div></dialog>
   <div id="toast" role="status" aria-live="polite"></div>
   <input type="file" id="replay-file" accept=".json,application/json" hidden>
-  <noscript><p class="fatal">The casebook requires JavaScript and WebAssembly.</p></noscript>
+  <noscript><p class="fatal" data-i18n="The casebook requires JavaScript and WebAssembly.">The casebook requires JavaScript and WebAssembly.</p></noscript>
   <script type="module" src="./casebook.js"></script>
 </body>
 </html>

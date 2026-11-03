@@ -1,3 +1,4 @@
+import {t} from './i18n.js';
 // Public ABI adapter. No game-rule fallback lives in the presentation layer.
 export const ERRORS = ['', 'Invalid action or seat.', 'This case has ended.',
   'That villager is dead.', 'No investigations remain today.', 'That ability is already spent.',
@@ -6,23 +7,23 @@ export const ERRORS = ['', 'Invalid action or seat.', 'This case has ended.',
 export class Engine {
   constructor(exports) {
     for (const key of ['fw_version','fw_reset','fw_command','fw_state','fw_person','fw_event'])
-      if(typeof exports[key] !== 'function') throw new Error(`Missing WASM export: ${key}`);
-    if(exports.fw_version() !== 1) throw new Error('Incompatible engine version.');
+      if(typeof exports[key] !== 'function') throw new Error(t('Missing WASM export: {key}',{key}));
+    if(exports.fw_version() !== 1) throw new Error(t('Incompatible engine version.'));
     this.api=exports; this.history=[]; this.api.fw_reset();
   }
   command(op, source=0, target=0) {
-    if (![op,source,target].every(n=>Number.isInteger(n)&&n>=-2147483648&&n<=2147483647)) throw new Error('Actions require integer arguments.');
+    if (![op,source,target].every(n=>Number.isInteger(n)&&n>=-2147483648&&n<=2147483647)) throw new Error(t('Actions require integer arguments.'));
     const result=this.api.fw_command(op,source,target);
-    if(result) throw new Error(ERRORS[result] || 'The engine rejected this action.');
+    if(result) throw new Error(t(ERRORS[result] || 'The engine rejected this action.'));
     this.history.push([op,source,target]);
     return this.snapshot();
   }
   reset() { this.api.fw_reset(); this.history=[]; return this.snapshot(); }
   replay(history) {
-    if(!Array.isArray(history)||history.length>200) throw new Error('Invalid saved history.');
+    if(!Array.isArray(history)||history.length>200) throw new Error(t('Invalid saved history.'));
     this.reset();
     try { for(const command of history) {
-      if(!Array.isArray(command)||command.length!==3) throw new Error('Invalid saved action.');
+      if(!Array.isArray(command)||command.length!==3) throw new Error(t('Invalid saved action.'));
       this.command(...command);
     } } catch(error) { this.reset(); throw error; }
     return this.snapshot();
@@ -41,7 +42,7 @@ export class Engine {
 }
 export async function loadEngine() {
   const response=await fetch(new URL('./core.wasm',import.meta.url));
-  if(!response.ok) throw new Error(`Engine download failed (${response.status}).`);
+  if(!response.ok) throw new Error(t('Engine download failed ({status}).',{status:response.status}));
   let module;
   try { module=await WebAssembly.instantiateStreaming(response.clone(),{}); }
   catch { module=await WebAssembly.instantiate(await response.arrayBuffer(),{}); }

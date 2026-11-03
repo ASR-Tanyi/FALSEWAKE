@@ -1,3 +1,4 @@
+import {t} from './i18n.js';
 export const PEOPLE = [
   ['Mara','The watchful one',0], ['Oren','Keeper of the flame',1],
   ['Silas','A familiar stranger',2], ['Elowen','Lost in a waking dream',3],
@@ -59,30 +60,30 @@ const TESTIMONY = {
   10:'A mark strips Smokescreen of their disguise. But it can attract the Tyrant.',
   11:'Three enemies came to this village. Not every false voice belongs to one.'
 };
-export const name = id => PEOPLE[id]?.name || 'The village';
+export const name = id => PEOPLE[id]?.name || t('The village');
 export function eventText(e) {
   const target=name(e.target);
   switch(e.kind) {
-    case 1:return TESTIMONY[e.value] || 'The villager has nothing more to add.';
-    case 2:return `${e.value===0?'Neither':e.value===1?'Exactly one':'Both'} of my neighbors ${e.value===1?'registers':'register'} as Evil.`;
-    case 3:return `${target} belongs to the ${e.value?'Evil':'Good'} team.`;
-    case 4:return `${target}'s claimed role ${e.value?'matches':'does not match'} their true role.`;
-    case 5:return `A mark was attempted on ${target}. Check the board for its visible token.`;
-    case 6:return `A ward is promised to ${target} until the next dawn.`;
-    case 7:return `A cleansing ritual was performed on ${target}. Permanent roles are unchanged.`;
-    case 8:return `Report #${e.target+1} was ${e.value?'true':'false'} when it was made.`;
-    case 9:return `${target} was executed. They were ${e.value?'Evil':'Good'}.`;
-    case 10:return `${target} survived the execution. No Resolve was lost.`;
-    case 11:return 'The bell falls silent. Night descends on the village.';
-    case 12:return `${target} died in the night. Their true identity is now revealed.`;
-    case 13:return `${target} survived a night attack, protected by ${e.value?'their immunity':'a ward'}.`;
-    case 14:return `Dawn breaks. Four investigations are available.`;
-    case 15:return e.value===1?'Every Evil villager has fallen. The village is free.':'The investigation has ended. The hollow keeps its secrets.';
-    default:return 'An unknown event was recorded.';
+    case 1:return t(TESTIMONY[e.value] || 'The villager has nothing more to add.');
+    case 2:return t(['Neither of my neighbors registers as Evil.','Exactly one of my neighbors registers as Evil.','Both of my neighbors register as Evil.'][e.value]);
+    case 3:return t(e.value?'{target} belongs to the Evil team.':'{target} belongs to the Good team.',{target});
+    case 4:return t(e.value?'{target}\'s claimed role matches their true role.':'{target}\'s claimed role does not match their true role.',{target});
+    case 5:return t('A mark was attempted on {target}. Check the board for its visible token.',{target});
+    case 6:return t('A ward is promised to {target} until the next dawn.',{target});
+    case 7:return t('A cleansing ritual was performed on {target}. Permanent roles are unchanged.',{target});
+    case 8:return t(e.value?'Report #{number} was true when it was made.':'Report #{number} was false when it was made.',{number:e.target+1});
+    case 9:return t(e.value?'{target} was executed. They were Evil.':'{target} was executed. They were Good.',{target});
+    case 10:return t('{target} survived the execution. No Resolve was lost.',{target});
+    case 11:return t('The bell falls silent. Night descends on the village.');
+    case 12:return t('{target} died in the night. Their true identity is now revealed.',{target});
+    case 13:return t(e.value?'{target} survived a night attack, protected by their immunity.':'{target} survived a night attack, protected by a ward.',{target});
+    case 14:return t('Dawn breaks. Four investigations are available.');
+    case 15:return t(e.value===1?'Every Evil villager has fallen. The village is free.':'The investigation has ended. The hollow keeps its secrets.');
+    default:return t('An unknown event was recorded.');
   }
 }
 export function eventLabel(e) {
-  return ({1:'Testimony',2:'Neighbor count',3:'Team reading',4:'Role audit',5:'Mark',6:'Protection',
+  return t(({1:'Testimony',2:'Neighbor count',3:'Team reading',4:'Role audit',5:'Mark',6:'Protection',
     7:'Cleansing',8:'Verification',9:'Execution',10:'Survival',11:'Nightfall',12:'Death',
-    13:'Survival',14:'Dawn',15:'Case closed'})[e.kind] || 'Event';
+    13:'Survival',14:'Dawn',15:'Case closed'})[e.kind] || 'Event');
 }

@@ -4,20 +4,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#121719">
-  <meta name="description" content="A village of broken truths. Investigate twelve villagers, question their claims, and find the evil hiding among the good.">
+  <meta name="description" content="A village of broken truths. Investigate twelve villagers, question their claims, and find the evil hiding among the good." data-i18n-content="A village of broken truths. Investigate twelve villagers, question their claims, and find the evil hiding among the good.">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'">
   <title>FALSEWAKE - A village of broken truths</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./casebook.css">
+  <link rel="stylesheet" href="./i18n.css">
 </head>
 <body class="sandbox-page">
-  <a class="skip-link" href="#main">Skip to the investigation</a>
-  <a class="sandbox-promo" href="./casebook.html"><span>NEW CASEBOOK</span> Two complete logic cases. One provable explanation. <strong>Open the sealed cases &rarr;</strong></a>
-  <div id="app"><main class="loading" id="main"><span class="loading-sigil">F</span><h1>FALSEWAKE</h1><p>Lighting the village lanterns...</p></main></div>
+  <a class="skip-link" href="#main" data-i18n="Skip to the investigation">Skip to the investigation</a>
+  <a class="sandbox-promo" href="./casebook.html"><span data-i18n="NEW CASEBOOK">NEW CASEBOOK</span> <span data-i18n="Two complete logic cases. One provable explanation.">Two complete logic cases. One provable explanation.</span> <strong data-i18n="Open the sealed cases">Open the sealed cases &rarr;</strong></a>
+  <div id="app"><main class="loading" id="main"><span class="loading-sigil">F</span><h1>FALSEWAKE</h1><p data-i18n="Lighting the village lanterns...">Lighting the village lanterns...</p></main></div>
   <dialog id="modal" aria-labelledby="modal-title"><div id="modal-body"></div></dialog>
   <div id="toast" role="status" aria-live="polite"></div>
-  <noscript><p class="fatal">FALSEWAKE needs JavaScript and WebAssembly. Enable JavaScript to enter the village.</p></noscript>
+  <noscript><p class="fatal" data-i18n="FALSEWAKE needs JavaScript and WebAssembly. Enable JavaScript to enter the village.">FALSEWAKE needs JavaScript and WebAssembly. Enable JavaScript to enter the village.</p></noscript>
   <script type="module" src="./app.js"></script>
 </body>
 </html>

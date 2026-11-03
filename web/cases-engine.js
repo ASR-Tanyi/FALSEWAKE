@@ -1,3 +1,4 @@
+import {t} from './i18n.js';
 // Sealed-case ABI v1. The UI never reimplements the deduction rules.
 const ERRORS=['','Invalid case, action, or seat.','This case is closed.','That testimony is already open.',
   'Choose exactly three different suspects.','That trio was already ruled out.','The case journal is full.'];
@@ -5,28 +6,28 @@ const integer=n=>Number.isInteger(n)&&n>=-2147483648&&n<=2147483647;
 export class CaseEngine {
   constructor(api) {
     for(const key of ['fd_version','fd_reset','fd_command','fd_state','fd_clue','fd_entry','fd_analysis','fd_support','fd_reveal','fd_theory','fd_compatible'])
-      if(typeof api[key]!=='function')throw new Error(`Missing case engine export: ${key}`);
-    if(api.fd_version()!==1)throw new Error('Incompatible case engine.');
+      if(typeof api[key]!=='function')throw new Error(t('Missing case engine export: {key}',{key}));
+    if(api.fd_version()!==1)throw new Error(t('Incompatible case engine.'));
     this.api=api;this.history=[];this.reset(1);
   }
   reset(id=this.api.fd_state(0)) {
-    if(!integer(id))throw new Error('Invalid case ID.');
-    const result=this.api.fd_reset(id);if(result)throw new Error(ERRORS[result]);
+    if(!integer(id))throw new Error(t('Invalid case ID.'));
+    const result=this.api.fd_reset(id);if(result)throw new Error(t(ERRORS[result]));
     this.history=[];return this.snapshot();
   }
   command(op,target) {
-    if(![op,target].every(integer))throw new Error('Actions require integer arguments.');
-    const result=this.api.fd_command(op,target);if(result)throw new Error(ERRORS[result]||'Rejected action.');
+    if(![op,target].every(integer))throw new Error(t('Actions require integer arguments.'));
+    const result=this.api.fd_command(op,target);if(result)throw new Error(t(ERRORS[result]||'Rejected action.'));
     this.history.push([op,target]);return this.snapshot();
   }
   replay(data) {
     if(!data||data.version!==1||![1,2].includes(data.caseId)||!Array.isArray(data.commands)||data.commands.length>15)
-      throw new Error('Invalid or incompatible case replay.');
+      throw new Error(t('Invalid or incompatible case replay.'));
     const before=this.export();
     try {
       this.reset(data.caseId);
       for(const command of data.commands) {
-        if(!Array.isArray(command)||command.length!==2)throw new Error('Malformed replay command.');
+        if(!Array.isArray(command)||command.length!==2)throw new Error(t('Malformed replay command.'));
         this.command(...command);
       }
       return this.snapshot();
@@ -37,9 +38,9 @@ export class CaseEngine {
   }
   export() {return {version:1,caseId:this.api.fd_state(0),commands:this.history.map(c=>[...c])};}
   theory(good,evil) {
-    if(![good,evil].every(integer))throw new Error('Theory masks must be integers.');
+    if(![good,evil].every(integer))throw new Error(t('Theory masks must be integers.'));
     const result=this.api.fd_theory(good,evil);
-    if(result<0)throw new Error('Invalid theory.');
+    if(result<0)throw new Error(t('Invalid theory.'));
     return result;
   }
   analysis() {
@@ -57,7 +58,7 @@ export class CaseEngine {
 }
 export async function loadCases() {
   const response=await fetch(new URL('./cases.wasm',import.meta.url));
-  if(!response.ok)throw new Error(`Case engine download failed (${response.status}).`);
+  if(!response.ok)throw new Error(t('Case engine download failed ({status}).',{status:response.status}));
   let module;try{module=await WebAssembly.instantiateStreaming(response.clone(),{});}
   catch{module=await WebAssembly.instantiate(await response.arrayBuffer(),{});}
   return new CaseEngine(module.instance.exports);
