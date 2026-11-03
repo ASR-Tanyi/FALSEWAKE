@@ -1,138 +1,112 @@
 # FALSEWAKE implementation plan
 
-Status: initial implementation plan. The first milestone is an interactive, deployable vertical slice, not the complete 160-role game. Work goes directly to `main`; no pull request is required for this initial setup.
+## Current state: v0.2 authored-puzzle milestone
 
-## 1. Product direction
+Work continues directly on `main`, without a PR. The original night-based interface remains available. The next increment adds a separate **sealed-dawn casebook**: two finite logic puzzles whose complete solutions can be checked exhaustively under a precisely documented ruleset.
 
-A single-player deduction game about a village in which allegiance, claimed identity, registered identity, and the reliability of testimony are different things. Good characters may cause harmful effects. Evil characters may tell the truth. The player must reason about interactions rather than equating a false statement with an evil speaker.
+This is an authored-puzzle slice of M2, not completion of the generalized dynamic role engine. We do not claim that the night sandbox, all 160 proposed roles, or future procedural cases have validated solutions.
 
-The first interface should feel like an occult investigation table: charcoal and midnight-blue surfaces, warm parchment typography, restrained amber highlights, a circular village, an illustrated village silhouette, and a persistent character inspector. No assets or text are copied from Demon Bluff or Blood on the Clocktower.
+## Product direction
 
-## 2. Milestone 1: interface plus working WASM slice
+A single-player deduction game where true allegiance, registration, claimed identity, and reliability are distinct. A Good character may be wrong or harmful; an Evil character may tell the truth. The player should discover an explanation, not merely guess who lies.
 
-### Scope
+Keep the occult investigation-table identity: charcoal surfaces, restrained gold, parchment typography, original vector villagers, a circular board, and an evidence-focused inspector. Do not copy art or game text from the reference games.
 
-- Responsive village board with 12 selectable villagers and fixed seat numbers.
-- Character inspector with claimed role, ability description, testimony, and personal notes.
-- Evidence journal with day/source attribution and pinning.
-- Searchable/filterable grimoire that distinguishes implemented roles from future concepts.
-- Local suspicion markers that are hypotheses, not verified alignment.
-- Investigation budget, resolve, execution confirmation, day/night progression, victory/defeat, and restart.
-- A deterministic tutorial case, not a random scenario generator.
-- A real WebAssembly engine, with no JavaScript rules fallback that could silently diverge.
-- Browser-local save/replay with an explicit schema version; no accounts, telemetry, backend, or secrets.
-- Keyboard navigation, visible focus, reduced-motion support, accessible dialogs, and touch-friendly layout.
-- Native core tests, WebAssembly contract/replay tests, and build validation in CI.
-- Static artifact built on each push to main; GitHub Pages deployment when Pages is enabled.
+## M1: interface and portable rules baseline
 
-### Non-goals for this milestone
+Implemented in the initial release:
 
-Full 160-role support, multiplayer, a SAT/constraint solver, guaranteed unique solutions for generated cases, procedural scenarios, monetization, cloud saves, production audio, service-worker/offline caching, signed APK releases, and a complete Android project.
+- Twelve-seat responsive village, inspector, notes, suspicion labels, evidence pins, searchable grimoire.
+- Deterministic night-based prototype with investigation actions, Resolve, executions, attacks, wards, marks, Taint, survival, death reveals, and end states.
+- Seven Citizen types, two Good Burdens, two Agents, one Tyrant, plus an Archivist claim. The larger catalogue remains a backlog.
+- C++ compiled to real WASM, versioned public C ABI, authoritative core validation, and command-replay browser saves.
+- Native tests, WASM tests, Chrome integration, and GitHub Pages build/deployment on pushes to main.
+- Existing license preserved; no backend, accounts, telemetry, CDN, or external runtime assets.
 
-## 3. Technical decision
+The original sandbox is deliberately preserved, including `falsewake.case.v1`, so this release does not silently reinterpret old replays.
 
-Use dependency-light browser ES modules and CSS for presentation, with a freestanding C++ core compiled to WebAssembly by Clang/LLD. Node's built-in tooling handles asset assembly, development serving, and tests. The C++ core has no DOM, filesystem, network, operating-system, or wall-clock dependencies.
+## M2a: sealed-dawn casebook (this increment)
 
-C++ is selected over Rust for this first slice because the available development environment can compile and verify both its native and WebAssembly targets immediately. The important boundary is the engine API, not the source language; a later Rust core could implement the same contract.
+### Deliverables
 
-### Boundaries
+1. **The borrowed voice:** twelve statements, three Evil Conspirators, one Good Drunk. Eight other Good witnesses tell the truth. Evil may tell truth or lies.
+2. **The painted saint:** adds a truthful Good Devilmask that registers as Evil. Distinguishes true Evil counts, registered Evil counts, and Good Burden counts.
+3. A published, fixed-dawn ruleset: no night attacks, Taint, executions, or changing claims. Read in any order, form a trio, and submit an accusation. Three Resolve; wrong submissions rule out only the submitted trio.
+4. Exhaustive enumeration of all public-rule assignments: 1,980 in case 01 and 15,840 in case 02. Each complete case has one full role assignment and a legal zero-penalty winning route.
+5. Optional evidence-only deduction assistant, joint hypothesis checks, three reasoning hints per case, and end-of-case explanations of the correct count and each speaker's role.
+6. Independent case saves; explicit replay inspection, JSON export/import, bounds checking, and atomic rejection of invalid imports.
+7. Responsive casebook and investigation screens using the existing visual language. A clear link from the original sandbox preserves access to both modes.
+8. Regression coverage integrated into the existing build and browser-test commands.
 
-- `web/`: presentation, role copy, input handling, accessibility, local hypotheses, notes.
-- `core/`: authoritative game state, rules, registration, action validation, event records, win/loss.
-- `scripts/`: repeatable build, local server, native/WASM verification.
-- `tests/`: engine invariants, ABI contract, deterministic replay, static asset checks.
-- `.github/workflows/`: CI and GitHub Pages deployment.
-- `dist/`: generated site and WASM; never commit generated output.
+### Acceptance gates
 
-Only public information crosses the engine view boundary during play. Browser-local WASM is not anti-cheat: a determined player can inspect its memory. No security claim is made about hiding a single-player solution from its owner.
+- Native C++ checks pass with address and undefined-behavior sanitizers.
+- Independent test-only enumeration agrees with WASM after every step of each proof route.
+- Full evidence yields exactly one assignment, including Burdens, not only one Evil trio.
+- The engine executes an evidence-derived winning route without Resolve loss.
+- No true-role, truth-value, or unopened-statement getter leaks private state during play.
+- Analysis consumes only opened evidence and publicly rejected trios. It does not inspect the authored solution.
+- Repeated and invalid actions are atomic. Invalid imports preserve the current run.
+- Old sandbox save data is untouched; cases save independently.
+- Real-browser checks verify selection, notes, pins, rules, reload, win flow, debrief, import, and 320/390/1440-pixel layouts.
+- GitHub Actions must pass before its deploy job publishes the artifact. A local offline render is not a replacement for the HTTP browser check.
 
-## 4. Engine contract
+See [docs/sealed-cases.md](docs/sealed-cases.md) for exact rules, proof scope, ABI, and replay schema. `npm run test:cases` produces `.build/case-validation.json` with proof counts.
 
-Keep a versioned, numeric C ABI with reset, command, and read operations. Document all opcodes and fields alongside the adapter. Validate source/target indices, dead characters, exhausted actions, repeated abilities, and terminal states in the core, not just the interface.
+## M2b: dynamic-script rigor (next)
 
-Store a bounded append-only public event history with stable event IDs. UI text renders structured event records. Test the native and compiled WASM representations against the same known expectations. Save accepted commands and replay them against a reset engine; reject incompatible or malformed saves.
+The sealed casebook establishes the proof and replay workflow without conflating static testimony with night powers. The next step is to apply that discipline to a deliberately small dynamic script.
 
-Do not expose true role/team through public getters until death or the end-of-game reveal. Claimed-role text is not a verified fact. Personal suspicion labels never influence engine outcomes.
+- Freeze exact specifications for 12-20 roles before extending the catalogue.
+- Separate true role, claimed role, true team, registration, impairment, ability output, and report truth.
+- Define explicit durations and phases: expire old effects, apply new impairment, redirect, cleanse, protect, investigate, attack, resolve death/reactions, check victory.
+- Specify whether effects persist after source death and whether protection prevents execution or only attacks.
+- Distinguish Ward removal from Ward consumption; do not trigger consumption abilities on removal.
+- Preserve historical targets and snapshots when states or seats change.
+- Model permanent Drunk separately from temporary Taint; no ordinary cleanse can change a hidden true role.
+- Guard registration recursion using snapshots and cap reaction chains per event.
+- Keep verified fixtures for Courier + Smokescreen, Wardmaker + Whisperer, Neverdead + Taint, and Cleanser + Drunk.
+- Add genuinely helpful and harmful cross-role interactions incrementally, with a role-interaction matrix.
+- Validate authored dynamic cases under their actual action budget and adversarial policy, not merely a final static assignment.
 
-## 5. Rules to settle before expanding the role library
+Completion means several explained, reproducible dynamic puzzles with tested interactions, not just a larger list of characters.
 
-The previous 160-character catalogue is a brainstorming backlog, not an implementation specification. In particular:
+## M3: generalized synergy engine
 
-- Separate true allegiance, registration, displayed claim, impairment, and report truth.
-- Distinguish a permanent hidden Drunk role from temporary Taint. Cleansing Taint must not cure a Drunk.
-- Wards stop a night attack, not execution. Removing a Ward is not consuming a Ward; trigger text must name the correct event.
-- A copied claim does not automatically grant its power.
-- Define whether effects stop on source death and when each duration expires.
-- Distinguish ability disablement from deliberately inverted reports.
-- Preserve the historical targets and state of each report; moving seats must not rewrite past truth.
-- Freeze a snapshot before registration evaluation to avoid neighbor-registration recursion.
-- Resolve each trigger at most once per triggering event; set explicit event/chain limits.
-- Define an ordering for redirection, impairment, cleansing, protection, investigation, attacks, death triggers, and victory checks before adding interacting roles.
-- Do not claim a unique solvable puzzle until a validator proves it under the actual information and action budget.
+Add reusable triggers, visits, bonds, durations, multiple attack sources, and bounded reaction queues. Log source, target, phase, and relevant historical facts. Define public/private event views explicitly. Property-test event ordering and loop termination before enabling new combinations.
 
-The tutorial supports only its documented subset. Unsupported roles must not appear as functional abilities.
+The core should eventually express an ability through trigger, condition, target selector, effect, duration, and limit. Do not prematurely generalize before the small-script semantics are settled.
 
-## 6. Art and interaction requirements
+## M4: procedural puzzles
 
-Desktop: compact game header, chapter/phase overview, circular village, investigator's notes, and a detailed selected-character panel. Evidence and grimoire are first-class views, not dead navigation links.
+Seeded PRNG, reproducible case IDs, constraint model, explanations for contradictions, uniqueness validation, action-budget/win-path validation, and difficulty metrics. Reject ambiguous or unwinnable cases. Never label a generated case "proven" because its hidden solution merely satisfies its own evidence.
 
-Mobile: preserve seat order and a usable board, then stack inspector and journal. Minimum 44px primary touch targets. Avoid hover-only instructions. Respect device safe areas. Use relative asset URLs so the same output works at `/FALSEWAKE/`, another subdirectory, or inside a native WebView.
+## M5: Android
 
-Art consists of original inline/vector marks and architectural silhouettes. Use local/system fonts in the initial build, with no external requests at runtime. Motion is decorative and must be suppressed by `prefers-reduced-motion`.
+Preferred first route: bundle the same static UI and WASM in a Capacitor Android WebView. WASM alone is not an APK. No Android project, debug APK pipeline, signing keys, or release APK is included yet.
 
-## 7. CI and GitHub Pages
+Before implementation: pin dependencies, verify actual device WebViews and offline loading, handle back navigation and safe areas, define save migration, add launcher/splash assets, then build debug APK artifacts. Release signing uses user-controlled GitHub secrets; never commit a keystore. A native C++ bridge is optional only if profiling or platform integration justifies it.
 
-On push to `main`, and on manual `workflow_dispatch`:
+## Architecture and boundaries
 
-1. Check out the exact commit.
-2. Set up Node and install the required Clang/LLD toolchain.
-3. Compile and run native engine tests.
-4. Compile the core to `core.wasm` and assemble `dist/`.
-5. Run WASM contract, replay, and static build tests.
-6. Upload a downloadable site artifact and the Pages artifact.
-7. Deploy only from `main`, using the `github-pages` environment, `pages: write`, and OIDC (`id-token: write`).
+- `web/`: DOM, CSS, local artwork, copy, annotations, and versioned adapters.
+- `core/engine.cpp`: unchanged dynamic sandbox rules; compiled to `core.wasm`.
+- `core/cases.cpp`: sealed-case state, evidence constraints, and exhaustive deduction; compiled to `cases.wasm`.
+- `tests/`: native assertions, WASM/API tests, independent case reference model, authored fixtures.
+- `scripts/`: compiler/build steps, local HTTP server, real-browser tests.
+- `docs/`: exact mode-specific rules and proof limitations.
+- `dist/`, `.build/`: generated output; never commit generated WASM or screenshots.
 
-First-time setup: repository Settings > Pages > Build and deployment > Source > GitHub Actions. The available repository connector cannot change this administration setting. A normal workflow `GITHUB_TOKEN` also cannot automatically enable an unconfigured Pages site. The workflow should explain this in its summary rather than claiming the site is live. Once enabled, rerun the workflow or push another commit.
+The two modes have separate contracts because their semantics differ. The shared boundary is a versioned numeric C ABI with reset/command/read functions. No JavaScript runtime rules fallback, OS imports, filesystem, network, wall clock, or allocator in the cores. A later native shell can reuse the same logic.
 
-Expected URL after successful deployment: https://asr-tanyi.github.io/FALSEWAKE/
+Browser WASM is not an anti-cheat boundary. Deliberate source/memory inspection can disclose a single-player solution; only the normal public view is restricted.
 
-Do not request a broad personal access token, store secrets in the repository, force-push history, replace the existing license, or commit generated binaries.
+## CI and deployment
 
-## 8. APK path
+The existing workflow remains the authority: native sanitizers, both WASM builds, all Node tests, both Chrome suites, then static artifacts and Pages deployment from `main`. Browser screenshots remain in the screenshot artifact. Preserve the Pages permissions/environment setup and relative asset URLs so `/FALSEWAKE/` and local hosting both work.
 
-Preferred first Android route: bundle the same static `dist/` and WASM in a Capacitor Android WebView. This preserves the UI and rules without rewriting the core. Later evaluate a native C++ bridge only if profiling or platform integration requires it.
+Repository settings must have Pages configured to use GitHub Actions. Do not request a broad personal access token, force-push history, alter the license, or claim deployment succeeded without checking the publish job.
 
-Before an APK milestone: add the Android project and pinned dependencies, test WASM loading in a real device WebView, handle back navigation and safe areas, make saved-state upgrades explicit, add app icons/splash assets, define offline update behavior, and build a debug APK in CI. Release signing must use user-controlled GitHub secrets, never committed keystores. WASM alone does not produce an APK.
+## Deferred decisions
 
-## 9. Follow-up milestones
-
-### M2: small complete deduction script
-
-Finalize 12-20 role specifications and deterministic effect ordering. Add test fixtures for Countkeeper + Drunk, Courier + Smokescreen, Wardmaker + Whisperer, and Cleanser + permanent impairment. Write authored cases with explanations and enforce solution validity. Add a replay inspector for development.
-
-### M3: synergy engine
-
-Introduce generalized triggers and durations, visits, bonds, multiple attack sources, historical evidence snapshots, and bounded reaction chains. Add a role-interaction matrix and property tests before importing additional catalogue entries.
-
-### M4: procedural puzzles
-
-Seeded PRNG, constraint model, contradiction explanations, uniqueness/action-budget verification, difficulty metrics, and reproducible case IDs. Reject ambiguous or unwinnable generated cases.
-
-### M5: Android
-
-Capacitor shell, device tests, offline bundle verification, save migration, debug APK artifacts, and separately authorized release signing.
-
-## 10. Acceptance checklist
-
-- [ ] The first screen looks and behaves like a game, not an admin dashboard.
-- [ ] Board selection, evidence, grimoire, notes, and hypotheses work.
-- [ ] Engine is loaded from a genuine compiled WASM file.
-- [ ] Invalid/duplicate actions do not mutate game state.
-- [ ] Resolve, deaths, and terminal states come from the engine.
-- [ ] Protection/corruption interactions have regression tests.
-- [ ] Reload can reconstruct the same run.
-- [ ] Small-screen layout has no horizontal overflow.
-- [ ] All runtime assets are local and work under a subpath.
-- [ ] CI builds and tests successfully.
-- [ ] Deployment status and any one-time setup requirement are reported accurately.
-- [ ] Existing license remains untouched.
+Multiplayer, cloud saves, service-worker/offline update policy, accounts, monetization, production sound, arbitrary role modding, and expansion to all 160 proposed skills are outside this milestone. Prioritize fair deductions, understandable interactions, and transparent validation over sheer content volume.

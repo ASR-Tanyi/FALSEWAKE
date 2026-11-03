@@ -2,35 +2,53 @@
 
 *A village of broken truths.*
 
-A single-player deduction-game prototype. Twelve villagers sit around the Hollow Bell. Some are Evil. Some are Good and dangerously misleading. A true statement does not make its speaker innocent.
+A single-player deduction game about the difference between an enemy, an innocent liar, and a truthful witness who only **appears** Evil. The UI is static web code; authoritative rules run in compiled C++ WebAssembly.
 
-This first milestone is an interactive interface and a small, deterministic WebAssembly game core, not the complete 160-role design. See [plan.md](plan.md) for the product plan, interaction rules, milestones, and Android path.
+## Play
 
-## Play and deployment
+**[Open the sealed casebook](https://asr-tanyi.github.io/FALSEWAKE/casebook.html)** - two authored logic cases with exhaustively validated solutions.
 
-Intended site: **https://asr-tanyi.github.io/FALSEWAKE/**. This address works only after GitHub Pages is enabled and a deployment succeeds.
+**[Enter the original night sandbox](https://asr-tanyi.github.io/FALSEWAKE/)** - experiment with roles, wards, Taint, marks, executions, and night attacks.
 
-The [Test, build and deploy workflow](../../actions/workflows/ci.yml) runs on pushes to `main`, pull requests, and manual dispatch. It compiles the native and WASM core, runs engine and real-browser tests, and uploads the tested static site. Only `main` can deploy.
+These URLs require a successful Pages deployment. Check the [Test, build and deploy workflow](../../actions/workflows/ci.yml) for the exact revision and publishing result.
 
-**One-time repository setup:** Settings > Pages > Build and deployment > Source > **GitHub Actions**. Then rerun the workflow. The workflow deliberately does not request an administrative personal access token to enable Pages. If Pages cannot be configured, the build artifact is still available, and the run summary explains that deployment did not occur.
+## New in v0.2: the sealed dawn
 
-The workflow also retains desktop/mobile screenshots and a downloadable `falsewake-web` artifact for 14 days. A green build alone does not prove that Pages was deployed: check the deployment step and its URL.
+**The borrowed voice** asks you to find three enemies while one Good Drunk gives a false count. **The painted saint** adds a Good Devilmask and separates true allegiance, registration, and Burden counts. Enemies can tell the truth in both cases.
 
-## What works
+Twelve sealed statements describe one frozen dawn. Open them in any order, keep notes, pin evidence, mark suspects, and submit a trio. Reading is free; wrong trios cost Resolve. After victory or defeat, inspect each witness's actual role and the correct count behind their testimony.
 
-- Circular twelve-seat board, original vector portraits, character inspector, mobile layout.
-- Investigation budget, one execution attempt per day, Resolve, night attacks, death reveals, victory/defeat, and restart.
-- Evidence journal, pins, role search and family filters, private hypotheses, and per-character notes.
-- Actual WASM rules, not a JavaScript placeholder. Claims, true roles, registration, and report reliability remain separate.
-- Three early interaction chains: Courier reveals Smokescreen; temporary Taint disables Neverdead; a ward saves a Whisperer victim but leaves them impaired.
-- Browser-local versioned saves replay accepted commands. No server, account, analytics, CDN, or external runtime assets.
-- Keyboard shortcuts (`1`, `2`, `3`, `?`, Escape), native dialogs, focus outlines, reduced-motion support, and escaped user notes.
+The optional deduction assistant considers only public rules, opened statements, and rejected trios. It starts hidden and can reveal conclusions already forced by that evidence. It never turns personal suspicion labels into facts. Replay inspection and JSON export/import preserve reproducibility, with isolated saves for each case and atomic rejection of malformed imports.
 
-The script has seven genuine Citizen role types, two Good Burdens, two Evil Agents, one Tyrant, and an Archivist claim. The grimoire explains precisely what is implemented. The roster is fixed, and replaying does not shuffle it. There is no procedural generator or uniqueness proof yet.
+The validator exhausts **1,980** permitted assignments for case 01 and **15,840** for case 02. Full evidence leaves exactly one complete assignment in each, including the Burdens. Tests replay an evidence-derived winning route without Resolve loss. This guarantee applies to these two fixed-dawn cases, **not** the dynamic sandbox or future generated scripts.
+
+Read [the exact sealed-case rules and ABI](docs/sealed-cases.md) and [the implementation roadmap](plan.md).
+
+## The night sandbox
+
+The original interface remains available with its existing save:
+
+- Circular twelve-seat board, local vector portraits, character inspector, mobile layout, notes, hypotheses, evidence pins, and searchable grimoire.
+- Four investigation actions per day, three Resolve, one optional execution attempt per day, night attacks, death reveals, victory/defeat, and restart.
+- Actual WASM rules. Claims, true roles, registration, and report reliability remain distinct.
+- Courier can remove Smokescreen's disguise. Taint can disable Neverdead. A ward can save a Whisperer victim but leave them impaired. Cleansing cannot cure the permanent Drunk role.
+- Versioned replay saves, keyboard shortcuts, native dialogs, focus outlines, and reduced-motion support.
+
+There are seven genuine Citizen role types, two Good Burdens, two Agents, one Tyrant, and an Archivist claim. Roles and authored attacks do not shuffle. This is a mechanics sandbox, not a proven unique deduction puzzle. The 160-role design is a backlog, not implemented content.
+
+### Exact sandbox ordering
+
+Day powers resolve immediately in command order. Questioning an arrival memory costs one action and is once per villager per case. Active powers cost one action and are once per day, except Trueglass, once per case. Mara's opening clue is free. Arrival memories are fixed unverified statements, not fresh ability readings.
+
+Execution costs no action. Executing Good costs one Resolve; a failed execution consumes the daily attempt but no Resolve. A ward does not prevent execution. Win by eliminating all three Evil characters, not only the Tyrant. Lose at zero Resolve, no surviving Good, or after twelve nights.
+
+At night: expire old Taint; a living Rotmonger Taints one Citizen; a living Whisperer attacks a marked Good victim or follows its authored priority beginning with Felix; test functioning Neverdead immunity before a real Ward; a survivor becomes Tainted, otherwise dies; expire wards; advance the day, refresh actions, and check the result.
+
+Taint disables beneficial powers and corrupts information until the next night. Binary results flip; a neighbor count adds one modulo three. An impaired Cleanser cannot cleanse itself. Drunk is a permanent role, not curable Taint. A promised ward is not proof of real protection. Marks persist and may be forged by Evil. Death reveals identity and removes registration disguises. Fixed-seat counts include dead neighbors; old reports never change.
 
 ## Run locally
 
-Requirements: **Node.js 22+**, **Clang with its WebAssembly target**, and **LLD**. Ubuntu 24.04 setup:
+Requirements: **Node.js 22+**, **Clang with its WebAssembly target**, and **LLD**. For Ubuntu 24.04:
 
 ```sh
 sudo apt-get update
@@ -40,80 +58,67 @@ npm test
 npm run dev
 ```
 
-Open `http://127.0.0.1:4173`. Set `PORT` to change the port. `npm run dev` builds once, then serves; rerun it after changing source. `npm run preview` serves an existing build. No npm dependencies or install step are required.
-
-On another system, set `CXX` to a compatible `clang++` executable. The development server intentionally binds to loopback only. Do not open `index.html` via `file://`; module and WASM loading require a web origin.
+Open `http://127.0.0.1:4173/casebook.html` or the root for the sandbox. There are no npm dependencies to install. Set `CXX` for another compatible compiler and `PORT` for a different local port. `npm run dev` builds once, then serves; rerun after source changes. Do not use `file://`, which cannot load modules and WASM normally.
 
 ```sh
-npm run build          # Compile core/engine.cpp; copy web/ to dist/
-npm test               # Native ASan/UBSan + WASM + replay + static asset tests
-npm run test:browser   # Chromium/Chrome real-HTTP integration and screenshots
+npm run build          # Compile both cores and assemble dist/
+npm test               # Both native sanitizer suites, builds, all Node tests
+npm run test:cases     # Sealed-case native + WASM + exhaustive model tests
+npm run test:browser   # Both real-Chrome HTTP integration suites
+npm run preview        # Serve an existing dist/
 ```
 
-The browser test discovers `chromium`, `google-chrome`, or `chromium-browser`; alternatively set `CHROME`. It needs permission to navigate to a local HTTP server. An environment that blocks all browser navigation cannot run that integration test. There is no silent skip or fake passing result. GitHub's Ubuntu hosted runner supplies Chrome.
+The browser tests discover Chrome/Chromium or use `CHROME`. They exercise the `/FALSEWAKE/` project subpath and desktop/390px/320px layouts. Environments that block browser navigation cannot run these HTTP checks; there is no fake-success fallback. GitHub CI runs them before deployment. `.build/case-validation.json` contains the generated proof summary; screenshots are in `.build/screenshots/`.
 
 ## Architecture
 
 ```text
-web/                    Browser ES modules, CSS, original vector art
-  app.js                Views, events, dialog flow, notes and local saves
-  engine.js             Versioned WASM adapter; command replay
-  data.js               Role copy and structured event rendering
-  art.js                Local portraits, icons and village silhouette
-core/engine.cpp         Authoritative allocation-free C++ rules
-scripts/                Build, local HTTP server, native/browser test runners
-tests/                  Native assertions and WASM contract/property tests
-.github/workflows/      Test/build/artifact/Pages pipeline
-dist/                   Generated site (not committed)
+web/                    UI, CSS, local SVG, copy, and ABI adapters
+  app.js / engine.js    Original night sandbox
+  casebook.js          Sealed-case interface and replay tools
+  cases-engine.js      Sealed-case WASM adapter; no JS rule fallback
+core/engine.cpp         Sandbox rules -> core.wasm
+core/cases.cpp          Sealed-case rules and solver -> cases.wasm
+tests/                  Native checks, WASM tests, independent reference model
+scripts/                Build, serve, native/browser verification
+docs/sealed-cases.md    Precise sealed-case rules, ABI, and proof scope
+.github/workflows/      Existing test/build/artifact/Pages pipeline
+dist/                   Generated site; not committed
 ```
 
-The core has no DOM, filesystem, network, allocator, clock, or operating-system imports. Clang compiles it to a small freestanding `.wasm` file. The browser calls a numeric C ABI and renders public observations. It does not implement a second set of game rules.
+The cores are freestanding, deterministic, and allocation-free, with no DOM, filesystem, network, clock, or OS imports. C++ was chosen so native and WASM targets could use the same tested code. The important portable boundary is the ABI, not the source language.
 
-C++ was chosen for this slice so both native and WASM builds could be verified with the available toolchain. The stable boundary is the ABI, not the language. A future native shell or rewritten core can preserve that boundary.
+### Original sandbox ABI v1
 
-### ABI v1
-
-All arguments/results are signed 32-bit integers. Seats are zero-based in the API and one-based in the UI.
+Arguments/results are signed 32-bit integers. Seat indices are zero-based.
 
 | Export | Contract |
 | --- | --- |
-| `fw_version()` | Returns `1`. |
-| `fw_reset()` | Reset the fixed case, including the free opening clue. |
-| `fw_command(op, source, target)` | `1` question, `2` claimed ability, `3` execute, `4` advance night. Returns `0` on success; nonzero errors do not mutate state. |
-| `fw_state(field)` | `0` day, `1` Resolve, `2` actions, `3` status, `4` execution used, `5` event count. |
-| `fw_person(seat, field)` | `0` alive, `1` claim, `2` questioned, `3` used today, `4` marked, `5` ward promised, `6` revealed role, `7` revealed team, `8` once-per-case spent. |
-| `fw_event(index, field)` | `0` kind, `1` day, `2` source, `3` target/reference, `4` public value. |
+| `fw_version()` | 1. |
+| `fw_reset()` | Reset the fixed sandbox and free opening clue. |
+| `fw_command(op, source, target)` | 1 question; 2 claimed ability; 3 execute; 4 advance night. Zero is success. Errors do not mutate state. |
+| `fw_state(field)` | 0 day; 1 Resolve; 2 actions; 3 status; 4 execution used; 5 event count. |
+| `fw_person(seat, field)` | 0 alive; 1 claim; 2 questioned; 3 used today; 4 marked; 5 ward promised; 6 revealed role; 7 revealed team; 8 once-per-case spent. |
+| `fw_event(index, field)` | 0 kind; 1 day; 2 source; 3 target/reference; 4 public value. |
 
-Status: `0` playing, `1` won, `2` lost. Hidden roles return `0`; hidden teams return `-1`. True identity is exposed only on death or case completion. Events contain no public truth flag. Internal memory is not a security boundary: someone inspecting this single-player WASM can discover the solution. This is not an anti-cheat system.
+Status is 0 playing, 1 won, 2 lost. Hidden roles return 0; hidden teams return -1. True identity becomes public only on death or case completion. Public events do not expose a truth flag. Invalid sources, dead actors, unavailable powers, spent actions, and terminal commands are rejected. The sealed-case API is separate and documented in `docs/sealed-cases.md`.
 
-The engine rejects out-of-range seats, dead actors/targets, spent actions, duplicate uses, passive actions, invalid self-protection, and commands after the end of the case. Event capacity and day count are bounded. The adapter also rejects malformed integer arguments and incompatible replay data.
+No accounts, telemetry, external runtime assets, or server are used. Saves stay in the browser. Browser WASM is **not anti-cheat**: inspecting source or memory can reveal a single-player answer.
 
-### Exact prototype rules
+## CI and GitHub Pages
 
-You have four investigation actions per day and three Resolve. Questioning an arrival memory costs one action and is once per villager per case. These fixed statements are unverified, not dynamically generated powers. Active claimed abilities cost one action and are once per day, except Trueglass, once per case. Mara's opening Countkeeper report is free.
+The workflow runs on `main` pushes, PRs, and manual dispatch. Only `main` deploys. It runs native sanitizers, builds both modules, runs Node and both browser suites, then uploads the tested static game and screenshots and deploys Pages. A green build is not proof of deployment: inspect the publish step.
 
-Execution is optional, costs no investigation action, and is limited to one attempt per day. A Good execution death costs one Resolve. A failed execution still consumes the attempt but no Resolve. Night deaths do not reduce Resolve. Win by executing all three Evil characters. Lose at zero Resolve, when all Good are dead, or after night twelve. Death reveals the true identity and removes registration disguises. Fixed-seat counts still include dead neighbors; historical reports never change.
-
-Day powers resolve immediately in command order. Night resolves in this order:
-
-1. Record nightfall and expire all old Taint.
-2. A living Rotmonger Taints the first living Citizen found from its deterministic day-based starting seat.
-3. A living Whisperer attacks the first marked living Good seat, otherwise a fixed authored priority (starting with Felix).
-4. Functioning Neverdead immunity is checked before a real Ward. A surviving victim becomes Tainted; otherwise they die. No attacker identity is leaked in the event.
-5. Wards expire, day advances, four actions and one execution attempt refresh, and victory/defeat is checked.
-
-Taint corrupts generated information and disables beneficial powers until the next night. Information inversion is precise: binary values flip; a neighbor count adds one modulo three. It does not change allegiance. A Drunk is permanently impaired and cannot be cleansed. An impaired Cleanser cannot cure itself. A promised ward is not proof of real protection. Marks persist, and Evil can forge a tangible mark, so demonstrating that action does not prove a true Courier role.
-
-This is intentionally a small authored ruleset. Bonds, seat swaps, generalized trigger stacks, multiple Tyrants, and the rest of the brainstorming catalogue are not implemented.
+For first-time setup, choose **Settings > Pages > Build and deployment > Source > GitHub Actions**, then rerun. No administrative personal access token is required by the workflow. Artifacts are retained for 14 days. The preexisting license and main history are preserved.
 
 ## Toward Android
 
-Keep the current UI and compiled WASM, then bundle `dist/` in a **Capacitor Android WebView**. Relative asset URLs and the environment-independent core support that route. WASM alone is not an APK; this repository does not yet contain an Android project, signing keys, or a mobile build pipeline.
+The planned first Android route bundles the same static UI and WASM in a Capacitor WebView. Relative asset URLs and an environment-independent core support it. WASM alone does not produce an APK. The repository does not yet include an Android project, signing keys, or an APK workflow.
 
-The later milestone must pin Capacitor dependencies, create the Android shell, test actual device WebViews/offline asset loading, define save migrations and back-button behavior, and build debug APK artifacts. Release signing belongs in user-controlled secrets, never in source control. A native C++ bridge is optional later, not a requirement for this first Android route.
+A later milestone must pin Capacitor dependencies, test real device WebViews and offline loading, define back-button and save-migration behavior, add app assets, and build debug APKs. Release signing uses user-controlled secrets, never committed keystores. A native C++ bridge remains optional.
 
-References: [Capacitor Android](https://capacitorjs.com/docs/android), [GitHub Pages custom workflows](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+References: [Capacitor Android](https://capacitorjs.com/docs/android), [GitHub Pages workflows](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
 ## License
 
-The repository's existing [LICENSE](LICENSE) is preserved. Portraits, symbols, and village artwork in this prototype are original local SVG code. No art or game text is copied from the reference games.
+The existing [LICENSE](LICENSE) remains unchanged. Portraits, symbols, and architecture are original local SVG code; no art or text is copied from the reference games.
