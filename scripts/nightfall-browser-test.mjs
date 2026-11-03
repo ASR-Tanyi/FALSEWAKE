@@ -38,7 +38,7 @@ try{
   if(language==='en')await screenshot('nightfall-timeline');
   // A malformed replay must not replace a won game or any saved annotations.
   await evaluate(`(async()=>{${setup}const before=localStorage.getItem('falsewake.nightfall.v1');const dt=new DataTransfer();dt.items.add(new File([JSON.stringify({version:1,kind:'nightfall',caseId:'warded-lantern',commands:[[2,11,2],[2,11,2]]})],'bad.json',{type:'application/json'}));$('#replay-file').files=dt.files;$('#replay-file').dispatchEvent(new Event('change'));await new Promise(r=>setTimeout(r,100));check(!!$('.result-banner.won'),'Invalid replay preserved terminal state');check(localStorage.getItem('falsewake.nightfall.v1')===before,'Invalid replay preserved save');})()`);
-  const missing=await evaluate(`(await import('./i18n.js')).missingMessages.size?[...(await import('./i18n.js')).missingMessages]:[]`);
+  const missing=await evaluate(`(async()=>[...(await import('./i18n.js')).missingMessages])()`);
   if(missing.length)throw Error('Missing translation IDs: '+JSON.stringify(missing));
   // Fresh board and timeline at every language/viewport combination.
   await evaluate(`(()=>{${setup}click('[data-action="reset"]');click('[data-action="confirm-reset"]');})()`);
