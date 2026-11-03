@@ -1,0 +1,49 @@
+// Public ABI adapter. No game-rule fallback lives in the presentation layer.
+export const ERRORS = ['', 'Invalid action or seat.', 'This case has ended.',
+  'That villager is dead.', 'No investigations remain today.', 'That ability is already spent.',
+  'This is a passive ability.', 'An execution has already been attempted today.',
+  'Choose another villager.', 'That villager has no report to verify.', 'The case journal is full.'];
+export class Engine {
+  constructor(exports) {
+    for (const key of ['fw_version','fw_reset','fw_command','fw_state','fw_person','fw_event'])
+      if(typeof exports[key] !== 'function') throw new Error(`Missing WASM export: ${key}`);
+    if(exports.fw_version() !== 1) throw new Error('Incompatible engine version.');
+    this.api=exports; this.history=[]; this.api.fw_reset();
+  }
+  command(op, source=0, target=0) {
+    if (![op,source,target].every(n=>Number.isInteger(n)&&n>=-2147483648&&n<=2147483647)) throw new Error('Actions require integer arguments.');
+    const result=this.api.fw_command(op,source,target);
+    if(result) throw new Error(ERRORS[result] || 'The engine rejected this action.');
+    this.history.push([op,source,target]);
+    return this.snapshot();
+  }
+  reset() { this.api.fw_reset(); this.history=[]; return this.snapshot(); }
+  replay(history) {
+    if(!Array.isArray(history)||history.length>200) throw new Error('Invalid saved history.');
+    this.reset();
+    try { for(const command of history) {
+      if(!Array.isArray(command)||command.length!==3) throw new Error('Invalid saved action.');
+      this.command(...command);
+    } } catch(error) { this.reset(); throw error; }
+    return this.snapshot();
+  }
+  snapshot() {
+    const a=this.api;
+    return { day:a.fw_state(0), resolve:a.fw_state(1), actions:a.fw_state(2),
+      status:a.fw_state(3), executed:!!a.fw_state(4),
+      people:Array.from({length:12},(_,i)=>({ id:i, alive:!!a.fw_person(i,0),
+        claim:a.fw_person(i,1), asked:!!a.fw_person(i,2), used:!!a.fw_person(i,3),
+        marked:!!a.fw_person(i,4), ward:!!a.fw_person(i,5), role:a.fw_person(i,6),
+        team:a.fw_person(i,7), spent:!!a.fw_person(i,8) })),
+      events:Array.from({length:a.fw_state(5)},(_,i)=>({ id:i, kind:a.fw_event(i,0),
+        day:a.fw_event(i,1), source:a.fw_event(i,2), target:a.fw_event(i,3), value:a.fw_event(i,4) })) };
+  }
+}
+export async function loadEngine() {
+  const response=await fetch(new URL('./core.wasm',import.meta.url));
+  if(!response.ok) throw new Error(`Engine download failed (${response.status}).`);
+  let module;
+  try { module=await WebAssembly.instantiateStreaming(response.clone(),{}); }
+  catch { module=await WebAssembly.instantiate(await response.arrayBuffer(),{}); }
+  return new Engine(module.instance.exports);
+}

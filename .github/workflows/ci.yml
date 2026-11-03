@@ -1,0 +1,91 @@
+name: Test, build and deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: falsewake-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Native + WASM + browser checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      CXX: clang++-18
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Install the portable compiler toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y clang-18 lld-18 libclang-rt-18-dev
+      - name: Native sanitizers, WASM build, contract and replay tests
+        run: npm test
+      - name: Real-browser smoke tests at the Pages subpath
+        run: npm run test:browser
+      - name: Browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-screenshots
+          path: .build/screenshots/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Downloadable static game
+        uses: actions/upload-artifact@v7
+        with:
+          name: falsewake-web
+          path: dist/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+      - name: GitHub Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist/
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check Pages configuration
+        id: pages
+        continue-on-error: true
+        uses: actions/configure-pages@v5
+      - name: Publish the tested artifact
+        id: deployment
+        if: steps.pages.outcome == 'success'
+        uses: actions/deploy-pages@v4
+      - name: Explain required one-time setup
+        if: steps.pages.outcome != 'success'
+        run: |
+          echo '::warning::Build and tests passed, but Pages configuration could not be read. Check Settings > Pages > Source: GitHub Actions, then rerun this workflow.'
+          {
+            echo '## Site built; deployment not performed'
+            echo 'The tested game is available in the **falsewake-web** artifact.'
+            echo 'Enable **Settings > Pages > Build and deployment > Source: GitHub Actions**, then rerun this workflow.'
+            echo 'If Pages is already enabled, inspect the configuration step for a permission or service error.'
+            echo 'No personal access token is needed for the normal configured deployment.'
+          } >> "$GITHUB_STEP_SUMMARY"
