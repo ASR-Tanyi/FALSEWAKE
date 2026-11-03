@@ -1,87 +1,73 @@
-# Sealed dawn: rules, proof scope, and engine contract
+# Sealed dawn: v0.4 rules and ABI v2
 
-The casebook at `casebook.html` is an additional authored-puzzle mode. The original `index.html` remains the night-based sandbox with its original save and rules. These two modes deliberately do not share a rules implementation or a save slot.
+Two authored twelve-seat investigations, with unique numbered character claims and original role sigils. All people are alive and statements describe one frozen dawn. There are no executions, visits, night attacks, position swaps, or changing effects in this mode.
 
-## Public rules
+## Public roster and truth conditions
 
-Both cases have twelve fixed seats and exactly three Evil Conspirators. Every statement is a numerical count about a named set of seats at the same frozen dawn. A group can include its speaker. Reading is free, permanent, and available in any order. There are no deaths, night attacks, temporary Taint, changing registrations, or active-target choices in this mode.
+Case 01 has three Evil enemies, one Good Drunk, and eight other Good Citizens. Case 02 replaces one Citizen with a Good Devilmask. The Drunk and Devilmask are distinct people. A healthy Good character reports a correct observation; the Good Drunk's observation is wrong; an enemy may tell the truth or lie. An Evil appearance is not an Evil team.
 
-| Role | Team | Testimony | Registration |
-| --- | --- | --- | --- |
-| Witness | Good | Must be true | Good |
-| Drunk | Good | Must be false; any different legal count | Good |
-| Devilmask | Good | Must be true | Evil |
-| Conspirator | Evil | May be true or false | Evil |
+All ordinary allegiance clues read apparent alignment. In case 01 registered Evil equals the three enemies. In case 02 it also includes the Good Devilmask. Single-person Burden readings see the Drunk or Devilmask; single-person impairment readings see the Drunk (there is no temporary Taint in a sealed case). There is no true-team investigation.
 
-Case 01, **The borrowed voice**, contains eight Witnesses, one Drunk, and three Conspirators. It asks only for counts of true Evil.
+Broad scopes of three or six seats give only presence/absence. Exact counts are restricted to a speaker's two living neighbors. Other readings ask about one person or compare two people. No statement includes its speaker among its targets. Each claim has a declared capability; a character does not get arbitrary questions.
 
-Case 02, **The painted saint**, contains seven Witnesses, one Drunk, one Devilmask, and three Conspirators. The two Burdens occupy different Good seats. Its statements use three distinct predicates:
+## Characters
 
-- **True Evil:** Conspirators only.
-- **Registered Evil:** Conspirators plus the Devilmask.
-- **Good Burdens:** the Drunk and the Devilmask.
-
-The roster and these rules are trusted. The statements are not. A true statement never proves the speaker Good. The Drunk's permanently wrong statement does not make them Evil. The Devilmask does not lie merely because it registers as Evil.
-
-## Win, loss, and information
-
-Players submit exactly three different suspects. A correct trio ends the case in victory. A wrong trio costs one of three Resolve and publicly rules out that entire trio; it does not identify an incorrect individual. Repeating a rejected trio is rejected without cost. Three wrong submissions end the case in defeat.
-
-At either terminal state, all roles, all statements, the actual count behind each statement, and each statement's truth value become available for a debrief. Before that point, the public getters expose neither true roles nor hidden truth values. Opened statements never change.
-
-This is a client-side single-player game, not an anti-cheat boundary. A user inspecting the compiled WASM or source can find the authored roster.
-
-## What uniqueness means here
-
-The solver enumerates every role assignment allowed by the public roster:
-
-- Case 01: choose 3 of 12 Evil seats, then 1 of 9 Good seats as Drunk: **1,980 assignments**.
-- Case 02: additionally choose 1 of the remaining 8 Good seats as Devilmask: **15,840 assignments**.
-
-For every opened statement, a candidate Good Witness or Devilmask must report the candidate's actual count. A candidate Drunk must report a different count. A candidate Conspirator imposes no constraint on their own statement. Rejected trios exclude only that exact Evil set. Unopened statements impose no constraints.
-
-For each shipped case, the complete record leaves exactly one full assignment, including the Burden seat(s), not merely a unique Evil trio. The tests also replay a legal read sequence and submit the evidence-derived trio with no Resolve loss. Since reading has no time or action cost and no attacks occur, the verified route is available to every fresh run.
-
-This proof applies only to the two sealed cases under these rules. It does not prove uniqueness or strategic solvability of the dynamic sandbox, arbitrary scripts, the 160-role backlog, or procedural cases.
-
-## The deduction assistant
-
-The optional assistant starts hidden and shows remaining assignments, distinct Evil trios, and identities shared by every compatible assignment. It uses only the public rules, opened statements, and rejected trios. It does not read the authored solution. New evidence invalidates a displayed analysis so a stale result is never presented as current.
-
-Working Good/Evil labels are separate annotations. "Check my theory" tests their joint consistency with the public record without turning those labels into facts. It does not spend Resolve. Three general reasoning hints explain the relevant mechanics without naming an answer.
-
-## ABI: `cases.wasm`, version 1
-
-All values are signed 32-bit integers. Seat indices are zero-based; seat masks use bits 0 through 11. Invalid getters return `-1`.
-
-| Export | Contract |
+| Claimed character | Sealed reading |
 | --- | --- |
-| `fd_version()` | Returns 1. |
-| `fd_reset(caseId)` | Select case 1 or 2 and reset. Invalid IDs leave state unchanged. |
-| `fd_command(op, target)` | 1 opens a seat; 2 submits an Evil-seat mask. Zero means success. |
-| `fd_state(field)` | 0 case ID; 1 opened mask; 2 Resolve; 3 status; 4 journal size. |
-| `fd_clue(seat, field)` | 0 count type; 1 target mask; 2 reported count. Hidden until opened or the case ends. |
-| `fd_entry(index, field)` | 0 operation; 1 target; 2 accusation result (1 correct, 0 otherwise). |
-| `fd_analysis(field)` | 0 candidate assignments; 1 distinct Evil trios; 2 forced Good mask; 3 forced Evil; 4 forced Drunk; 5 forced Devilmask. |
-| `fd_support(seat, role)` | Number of compatible assignments putting this seat in role 1 Witness, 2 Drunk, 3 Devilmask, 4 Conspirator. |
-| `fd_theory(goodMask, evilMask)` | Number of compatible assignments satisfying both sets of labels. Invalid masks return -1. |
-| `fd_compatible(evilMask, drunkSeat, maskSeat)` | 1 if this complete candidate fits public evidence; 0 otherwise. Use -1 for no Devilmask in case 01. |
-| `fd_reveal(seat, field)` | Terminal only: 0 role, 1 actual count, 2 statement truth. Always -1 during play. |
+| Countkeeper | Exact apparent-Evil count among its two living neighbors. |
+| Lantern Reader | One living neighbor's apparent team. |
+| Bellkeeper | Any apparent Evil in six consecutive other seats? |
+| Lookout | Any apparent Evil in three consecutive other seats? |
+| Kinseeker | Do two selected other people appear to share a team? |
+| Gatekeeper | Does exactly one of two selected others appear Evil? |
+| Twinwatch | Do both selected others appear Evil? |
+| Compass | Any apparent Evil in the next three living seats clockwise? |
+| Backtracker | The same question counterclockwise. |
+| Farwatch | The opposite seat's apparent team. |
+| Hollow Eye | Does one other person appear to be a Burden? |
+| Taintreader | Does one other person appear impaired? |
 
-Status is 0 playing, 1 won, 2 lost. Command errors are 1 invalid argument, 2 terminal case, 3 already opened, 4 not exactly three suspects, 5 repeated rejected trio, 6 full journal. Rejected commands are atomic. The bounded run has at most twelve reads and three accusations.
+Each case uses every claim once, in a different order. Good ordinary characters really have their claimed identities. Hidden Burdens and enemies borrow claims. The revealed enemies have three distinct character identities (Forger, Familiar, Whisperer); in this fixed-dawn mode they share the public permission to bluff, with no additional active powers. Enemy subtype is not a solver target.
 
-## Save and replay
+## Player actions
 
-The original sandbox keeps `falsewake.case.v1`. Each sealed case gets `falsewake.sealed.v1.<caseId>`. Its replay schema is `{version: 1, caseId, commands: [[op, target], ...]}` plus optional selected seat, notes, theory labels, and pinned seats. No hidden answer is exported.
+Open any unopened testimony for free. Mark private Good/Evil hypotheses, take notes, pin evidence, and submit exactly three suspect numbers. A wrong trio costs one of three Resolve and excludes that whole trio only. It gives no individual hit count. Repeating an excluded trio is rejected without penalty. The correct trio wins; three wrong trios lose. Either ending reveals all identities and compares each report with the correct **observation**, including misleading appearances.
 
-The adapter validates shape, integer bounds, case ID, schema version, and every command through WASM. Malformed imports roll back atomically to the previous investigation. Valid imports replace only their own case's slot. File imports are bounded to 40 KB, replay histories to fifteen commands, and individual notes to 1,000 characters. UI annotation text is escaped before HTML insertion.
+The optional assistant is hidden initially. It enumerates only public rules, opened statements, and rejected trios. It never consults the authored solution, unopened statements, or personal notes. The separate theory checker filters that same set by all the user's proposed Good/Evil labels jointly. A possible theory is not a proven fact.
 
-## Validation and maintenance
+## Validation scope
 
-`npm run test:cases` runs native ASan/UBSan assertions, compiles the freestanding C++ module, and runs ten Node test cases. These include independent exhaustive enumeration after every step, complete winning replays, honest Evil and false Good examples, hidden-view checks, bad-input atomicity, joint hypotheses, import rollback, and 2,000 seeded boundary checks.
+The independent test model enumerates 1,980 possible assignments for case 01 (three Evil plus one distinct Good Drunk) and 15,840 for case 02 (also one distinct Good Devilmask). With all twelve statements, each case has exactly one enemy trio and exactly one placement of its Good Burdens. Tests compare the independent evaluator with WASM after **every opened statement**, including forced-role masks and role support counts, then submit an evidence-derived winning trio with no Resolve loss.
 
-`npm test` runs the old and new suites. The independent reference model is test-only JavaScript; the browser has no rules fallback. A machine-readable proof summary is written to `.build/case-validation.json`.
+This proves the enemy team and Burden placement for these two fixed authored cases, not arbitrary enemy subtypes, the dynamic sandbox, future role combinations, or a procedural generator. Independent proof reports are written to `.build/case-1-validation.json` and `.build/case-2-validation.json`.
 
-`npm run test:browser` runs both the existing sandbox checks and the new real-Chrome casebook checks over HTTP at `/FALSEWAKE/`. It covers saved-state isolation, a full evidence-to-win interaction, debrief, valid and invalid replay imports, and 1440/390/320-pixel layouts. Screenshots go to the existing CI screenshot artifact.
+## Numeric ABI v2
 
-The local authoring environment can block browser HTTP navigation. Offline visual previews are useful for layout inspection but are not counted as passing real-HTTP browser tests. CI must run those tests without a silent skip.
+All arguments and results are signed 32-bit integers. Seat indices are zero-based internally and displayed as #01 through #12. A mask uses bit `1 << seat`.
+
+| Export | Meaning |
+| --- | --- |
+| `fd_version()` | 2. |
+| `fd_reset(id)` | Open case 1 or 2; invalid IDs are atomic. |
+| `fd_command(op,target)` | 1: open numbered seat; 2: accuse a three-bit trio. 0 means success. |
+| `fd_state(field)` | 0 case ID; 1 opened mask; 2 Resolve; 3 status (0 playing, 1 won, 2 lost); 4 journal size. |
+| `fd_claim(seat)` | Public claimed-character ID, even before opening testimony. |
+| `fd_clue(seat,field)` | 0 predicate; 1 target mask; 2 reported value. All return -1 before reading, except in debrief. |
+| `fd_entry(index,field)` | 0 operation; 1 seat/trio argument; 2 accusation result. |
+| `fd_analysis(field)` | 0 assignments; 1 distinct trios; 2 forced Good; 3 forced Evil; 4 forced Drunk; 5 forced Devilmask. |
+| `fd_support(seat,role)` | Number of evidence-compatible worlds supporting family 1 Citizen, 2 Drunk, 3 Devilmask, 4 Enemy. |
+| `fd_theory(good,evil)` | Count compatible worlds also fitting both hypothesis masks. |
+| `fd_compatible(evil,drunk,mask)` | Whether a hypothetical assignment fits public evidence, not whether it is the actual world. |
+| `fd_reveal(seat,field)` | Only after ending: 0 family; 1 correct observation; 2 whether report was correct; 3 actual unique character ID. |
+
+Predicate IDs: 1 apparent-Evil presence, 2 exact living-neighbor count, 3 one person's apparent team, 4 same apparent team, 5 both apparent Evil, 6 one-person Burden, 7 one-person impairment, 8 exactly-one apparent Evil. All except 2 are Boolean (0/1). Predicate 2 has exactly two targets in sealed cases.
+
+Errors: 1 invalid input, 2 terminal case, 3 duplicate read, 4 not exactly three suspects, 5 already rejected trio, 6 full journal. Invalid commands do not mutate state. The journal has capacity 32; a legal run needs at most 15 entries.
+
+## Replay v2
+
+`{version:2, caseId:1|2, commands:[[op,target],...]}` stores accepted commands only. UI annotations add selected seat, tags, pins, and notes, with length/type bounds. The adapter validates imports and restores the existing run on any failed command. Maximum 15 commands and 40 KB upload. Old version-1 replays are deliberately incompatible because both authored solutions and clue semantics changed.
+
+Storage keys: `falsewake.sealed.v2.1`, `falsewake.sealed.v2.2`. Old slots are not deleted. Changing language never changes the numeric state or replay schema. Notes are escaped, never interpreted as HTML.
+
+Browser-local WASM is not anti-cheat: deliberate source or memory inspection can discover a solution. Only the normal public API is designed not to leak hidden information.

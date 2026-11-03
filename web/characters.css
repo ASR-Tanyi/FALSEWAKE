@@ -1,0 +1,13 @@
+/* Role sigils use one neutral palette: no hidden allegiance is encoded. */
+.role-emblem {color:var(--gold-bright);filter:drop-shadow(0 0 8px #bda67410)}
+.villager .role-emblem{color:#b8aa80}.villager.selected .role-emblem{color:var(--gold-bright)}
+.villager-name{font-variant-numeric:tabular-nums;letter-spacing:1px;font-family:var(--sans);font-size:13px;font-weight:600}
+.villager-role{max-width:110px;white-space:normal;line-height:1.25;min-height:20px;text-align:center}
+.portrait-halo .role-emblem{color:var(--gold-bright)}
+.character-hero h2{font-variant-numeric:tabular-nums;letter-spacing:2px}
+.character-rules{border:1px solid var(--line);padding:12px;margin:18px 0;border-radius:4px}
+.character-rules summary{cursor:pointer;min-height:32px;color:var(--gold)}
+.character-rules>p{margin:16px 0;line-height:1.7}.character-rules .icon{margin-right:8px;color:var(--gold)}
+.debrief-note p{overflow-wrap:anywhere}
+@media(max-width:690px){.villager-role{font-size:8px;max-width:80px}.villager-name{font-size:12px}}
+@media(max-width:400px){.villager-role{display:none}.villager-name{font-size:11px}.character-rules summary{min-height:44px}}

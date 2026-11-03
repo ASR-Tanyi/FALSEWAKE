@@ -2,111 +2,104 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {CaseEngine} from '../web/cases-engine.js';
+import {CASE_CHARACTERS,clueText} from '../web/characters.js';
 const bytes=await readFile(new URL('../dist/cases.wasm',import.meta.url));
-const fixtures=JSON.parse(await readFile(new URL('./cases-fixtures.json',import.meta.url)));
-const bit=i=>1<<i;
-const bits=m=>Array.from({length:12},(_,i)=>i).filter(i=>m&bit(i));
-// Independent reference model: arrays/set membership, not the C++ bit-count routine.
-function enumerate(f,opened=0,rejected=[]) {
-  const result=[];
-  for(let a=0;a<10;++a)for(let b=a+1;b<11;++b)for(let c=b+1;c<12;++c) {
-    const evil=[a,b,c],e=bit(a)|bit(b)|bit(c);if(rejected.includes(e))continue;
-    const innocents=Array.from({length:12},(_,i)=>i).filter(i=>!evil.includes(i));
-    for(const d of innocents)for(const m of f.masked?innocents.filter(i=>i!==d):[-1]) {
-      const truth=clue=>bits(clue.targets).filter(i=>clue.type===1?evil.includes(i):clue.type===2?(evil.includes(i)||i===m):(i===d||i===m)).length;
-      if(f.clues.every((clue,i)=>!(opened&bit(i))||evil.includes(i)||(i===d?clue.value!==truth(clue):clue.value===truth(clue)))) result.push({e,d,m});
-    }
-  }
-  return result;
+const fixtures=JSON.parse(await readFile(new URL('./cases-fixtures.json',import.meta.url),'utf8'));
+const bit=i=>i<0?0:1<<i, pop=m=>Array.from({length:12},(_,i)=>!!(m&bit(i))).filter(Boolean).length;
+const fresh=async(id=1)=>{const e=new CaseEngine((await WebAssembly.instantiate(bytes,{})).instance.exports);e.reset(id);return e;};
+// Independent, test-only evaluator: use arrays of observed people, not WASM's predicate code.
+function observation(q,e,d,m){
+ const observed=Array.from({length:12},(_,i)=>Boolean(e&bit(i))||i===m);
+ const indices=Array.from({length:12},(_,i)=>i).filter(i=>q.targets&bit(i));
+ const values=indices.map(i=>observed[i]);
+ switch(q.type){
+  case 1:case 3:return Number(values.some(Boolean));
+  case 2:return values.filter(Boolean).length;
+  case 4:return Number(values[0]===values[1]);
+  case 5:return Number(values.every(Boolean));
+  case 6:return Number(indices.some(i=>i===d||i===m));
+  case 7:return Number(indices.includes(d));
+  case 8:return Number(values.filter(Boolean).length===1);
+  default:throw Error('Unknown observation');
+ }
 }
-function summary(ws) {
-  return {worlds:ws.length,teams:new Set(ws.map(w=>w.e)).size,
-    good:ws.length?ws.reduce((m,w)=>m&(4095^w.e),4095):0,
-    evil:ws.length?ws.reduce((m,w)=>m&w.e,4095):0,
-    drunk:ws.length?ws.reduce((m,w)=>m&bit(w.d),4095):0,
-    mask:ws.length?ws.reduce((m,w)=>m&(w.m<0?0:bit(w.m)),4095):0,
-    support:Array.from({length:12},(_,i)=>[1,2,3,4].map(r=>ws.filter(w=>(w.e&bit(i)?4:i===w.d?2:i===w.m?3:1)===r).length))};
+function worlds(id,clues,rejected=[]){
+ const result=[];
+ for(let e=0;e<4096;e++)if(pop(e)===3&&!rejected.includes(e))for(let d=0;d<12;d++)if(!(e&bit(d)))
+  for(let m=id===1?-1:0;m<(id===1?0:12);m++)if(m!==d&&!(e&bit(m))){
+   if(clues.every(c=>!!(e&bit(c.id))||(d===c.id?c.value!==observation(c,e,d,m):c.value===observation(c,e,d,m))))result.push([e,d,m]);
+  }
+ return result;
 }
-async function fresh(id=1){const e=new CaseEngine((await WebAssembly.instantiate(bytes,{})).instance.exports);e.reset(id);return e;}
-const proof=[];
-test('sealed cases use genuine environment-free WASM and expose no unopened identities',async()=>{
-  assert.deepEqual([...bytes.subarray(0,4)],[0,97,115,109]);assert.deepEqual(WebAssembly.Module.imports(await WebAssembly.compile(bytes)),[]);
-  for(const id of [1,2]){const e=await fresh(id),s=e.snapshot();assert.equal(e.api.fd_version(),1);assert.equal(s.opened,0);assert.equal(s.resolve,3);
-    for(const c of s.clues){assert.equal(c.type,-1);assert.equal(c.targets,-1);assert.equal(c.value,-1);assert.equal(c.role,-1);assert.equal(c.actual,-1);assert.equal(c.truth,-1);}
-    assert.equal(e.api.fd_clue(-1,0),-1);assert.equal(e.api.fd_reveal(12,0),-1);assert.equal(e.api.fd_entry(0,0),-1);
+test('genuine sealed WASM v2 exposes claims, never unopened statements or true identities',async()=>{
+ assert.deepEqual(WebAssembly.Module.imports(await WebAssembly.compile(bytes)),[]);const e=await fresh();assert.equal(e.api.fd_version(),2);
+ for(const c of e.snapshot().clues){assert.ok(c.claim>0);for(const f of ['type','targets','value','role','actual','truth','character'])assert.equal(c[f],-1);}
+});
+for(const id of [1,2])test(`case ${id}: independent exhaustive proof agrees at every reading and yields a zero-loss win`,async()=>{
+ const e=await fresh(id),record=[];assert.equal(e.analysis().worlds,id===1?1980:15840);
+ for(let i=0;i<12;i++){
+  e.command(1,i);const s=e.snapshot(),possible=worlds(id,s.clues.filter(c=>c.read)),a=e.analysis();
+  assert.equal(a.worlds,possible.length);assert.equal(a.teams,new Set(possible.map(w=>w[0])).size);
+  for(const [field,index] of [['evil',0],['drunk',1],['mask',2]])assert.equal(a[field],possible.reduce((m,w)=>m&(index?bit(w[index]):w[0]),4095));
+  for(let seat=0;seat<12;seat++){
+   const support=[0,0,0,0];for(const [enemy,drunk,mask]of possible)support[enemy&bit(seat)?3:drunk===seat?1:mask===seat?2:0]++;
+   assert.deepEqual(a.support[seat],support);
   }
+  record.push(a.worlds);
+ }
+ const a=e.analysis();assert.equal(a.worlds,1);assert.equal(a.evil,fixtures[id-1].evil);
+ assert.equal(a.drunk,bit(fixtures[id-1].drunk));assert.equal(a.mask,bit(fixtures[id-1].mask));
+ e.command(2,a.evil);assert.equal(e.snapshot().status,1);assert.equal(e.snapshot().resolve,3);
+ for(const c of e.snapshot().clues){assert.ok(c.character>0);assert.equal(c.actual,observation(c,a.evil,fixtures[id-1].drunk,fixtures[id-1].mask));}
+ assert.equal(new Set(e.snapshot().clues.map(c=>c.character)).size,12);
+ await mkdir('.build',{recursive:true});await writeFile(`.build/case-${id}-validation.json`,JSON.stringify({case:id,worlds:record,unique:true,resolve:3}));
 });
-for(const f of fixtures) {
-  test(`case ${f.id}: independent exhaustive model agrees after every step and proves a unique complete solution`,async()=>{
-    const e=await fresh(f.id);let opened=0;const route=[];
-    assert.deepEqual(e.analysis(),summary(enumerate(f)));assert.equal(e.analysis().worlds,f.worlds);
-    for(const [seat] of f.proof){e.command(1,seat);opened|=bit(seat);const expected=enumerate(f,opened),analysis=e.analysis();
-      assert.deepEqual(analysis,summary(expected));route.push({read:seat+1,assignments:analysis.worlds,evilTrios:analysis.teams});
-      const c=e.snapshot().clues[seat];assert.deepEqual([c.type,c.targets,c.value],[f.clues[seat].type,f.clues[seat].targets,f.clues[seat].value]);
-    }
-    assert.equal(e.analysis().worlds,1);assert.equal(e.analysis().evil,f.truth.e);assert.equal(e.analysis().drunk,bit(f.truth.d));
-    assert.equal(e.analysis().mask,f.truth.m<0?0:bit(f.truth.m));
-    assert.equal(e.theory(0,f.truth.e),1);
-    assert.equal(e.api.fd_compatible(f.truth.e,f.truth.d,f.truth.m),1);
-    // A proof is a winning, legal action sequence, not just an offline roster claim.
-    e.command(2,e.analysis().evil);assert.equal(e.snapshot().status,1);assert.equal(e.snapshot().resolve,3);
-    const reports=e.snapshot().clues;
-    assert.equal(reports[f.truth.d].truth,0);assert.equal(reports[f.truth.d].role,2);
-    assert.ok(reports.some(c=>c.role===4&&c.truth===1),'An Evil witness tells the truth.');
-    assert.ok(reports.some(c=>c.role===4&&c.truth===0),'An Evil witness also lies.');
-    for(const c of reports)if(c.role===1||c.role===3)assert.equal(c.truth,1);
-    proof.push({caseId:f.id,initialAssignments:f.worlds,finalAssignments:1,uniqueEvilTrio:true,uniqueBurdenRoles:true,zeroPenaltyWinningRoute:route});
-  });
-}
-test('invalid, duplicate, terminal, and non-integer commands are atomic',async()=>{
-  const e=await fresh();for(const args of [[0,0],[1,-1],[1,12],[2,0],[2,4096],[2,3],[1,NaN],[1,1.5],[1,2**32]]) {
-    const before=e.export(),s=e.snapshot();assert.throws(()=>e.command(...args));assert.deepEqual(e.export(),before);assert.deepEqual(e.snapshot(),s);
+test('all authored skills are simple, bounded, unique, and exclude their speaker',async()=>{
+ for(const id of [1,2]){
+  const e=await fresh(id);assert.equal(new Set(e.snapshot().clues.map(c=>c.claim)).size,12);
+  for(let i=0;i<12;i++)e.command(1,i);
+  for(const c of e.snapshot().clues){
+   assert.equal(c.targets&bit(c.id),0);assert.ok(pop(c.targets)>=1&&pop(c.targets)<=6);
+   if(pop(c.targets)>2)assert.equal(c.type,1);
+   if(c.type===2){assert.equal(pop(c.targets),2);assert.equal(c.targets,bit((c.id+11)%12)|bit((c.id+1)%12));}
+   else assert.ok(c.value===0||c.value===1);
+   if([3,6,7].includes(c.type))assert.equal(pop(c.targets),1);
+   if([4,5,8].includes(c.type))assert.equal(pop(c.targets),2);
+   const text=clueText(c);assert.match(text,/#\d\d/);assert.doesNotMatch(text,/Mara|Silas|truly|true team/);
+   assert.ok(CASE_CHARACTERS[c.claim]);
   }
-  e.command(1,2);assert.throws(()=>e.command(1,2));assert.throws(()=>e.reset(3));assert.throws(()=>e.reset('1'));
-  const before=e.export();assert.throws(()=>e.theory(-1,0));assert.throws(()=>e.theory(1,1));assert.throws(()=>e.theory(0,NaN));assert.deepEqual(e.export(),before);
-  e.command(2,1154);const finished=e.snapshot();assert.throws(()=>e.command(1,0));assert.deepEqual(e.snapshot(),finished);
+ }
 });
-test('wrong accusations rule out whole trios without leaking any individual identity',async()=>{
-  const e=await fresh(2);e.command(2,7);assert.equal(e.snapshot().resolve,2);
-  assert.equal(e.theory(0,7),0);assert.deepEqual(e.analysis(),summary(enumerate(fixtures[1],0,[7])));
-  assert.ok(e.snapshot().clues.every(c=>c.role===-1));assert.throws(()=>e.command(2,7));assert.equal(e.snapshot().resolve,2);
-  e.command(2,11);e.command(2,13);assert.equal(e.snapshot().status,2);assert.equal(e.snapshot().resolve,0);
-  assert.ok(e.snapshot().clues.every(c=>c.role>0&&c.type>0));assert.throws(()=>e.command(1,0));
+test('an enemy can be truthful, a Good character can be wrong, and mask is not an enemy',async()=>{
+ const e=await fresh(2);for(let i=0;i<12;i++)e.command(1,i);const a=e.analysis();e.command(2,a.evil);
+ const s=e.snapshot();assert.ok(s.clues.some(c=>c.role===4&&c.truth===1));assert.ok(s.clues.some(c=>c.role===2&&c.truth===0));
+ assert.ok(s.clues.some(c=>c.role===3&&c.truth===1));
 });
-test('theory checks use joint public constraints rather than individual guesses',async()=>{
-  const e=await fresh(2);const f=fixtures[1];e.command(1,3);e.command(1,10);const ws=enumerate(f,bit(3)|bit(10));
-  for(const [good,evil] of [[3,4],[0,64],[0,577],[0,7],[512,32]])assert.equal(e.theory(good,evil),ws.filter(w=>!(w.e&good)&&(w.e&evil)===evil).length);
-  assert.equal(e.theory(0,15),0); // Four Evil contradict the public three-enemy roster, even with no private data.
+test('invalid, repeated, non-integer and terminal actions are atomic',async()=>{
+ const e=await fresh();for(const args of [[0,0],[1,-1],[1,12],[2,0],[2,4096],[1,NaN],[1,1.5],[1,2**32]]){
+  const before=e.snapshot();assert.throws(()=>e.command(...args));assert.deepEqual(e.snapshot(),before);
+ }
+ e.command(1,0);assert.throws(()=>e.command(1,0));
+ e.command(2,7);const rejected=e.snapshot();assert.throws(()=>e.command(2,7));assert.deepEqual(e.snapshot(),rejected);
+ e.command(2,11);e.command(2,13);assert.equal(e.snapshot().status,2);const ended=e.snapshot();assert.throws(()=>e.command(1,1));assert.deepEqual(e.snapshot(),ended);
 });
-test('analysis never opens statements, mutates the run, or treats a hypothesis as fact',async()=>{
-  const e=await fresh();const before=e.snapshot(),history=e.export();e.analysis();e.theory(0,7);
-  assert.deepEqual(e.snapshot(),before);assert.deepEqual(e.export(),history);
-  assert.equal(e.analysis().evil,0);assert.equal(e.analysis().good,0);
+test('wrong accusations exclude whole trios without leaking individual identities',async()=>{
+ const e=await fresh();e.command(2,7);assert.equal(e.analysis().teams,219);assert.equal(e.snapshot().resolve,2);
+ assert.ok(e.snapshot().clues.every(c=>c.role===-1));assert.equal(e.analysis().evil,0);
 });
-test('accepted commands replay exactly; bad imports preserve the current case atomically',async()=>{
-  const e=await fresh(2);e.command(1,4);e.command(2,7);e.command(1,9);
-  const data=e.export(),other=await fresh();assert.deepEqual(other.replay(data),e.snapshot());assert.deepEqual(other.analysis(),e.analysis());
-  for(const invalid of [null,{}, {...data,version:99},{...data,caseId:3},{...data,commands:Array(16).fill([1,1])},
-    {...data,commands:[[1,0],[1,0]]},{...data,commands:[[1,'2']]},{...data,commands:[[1,0,0]]},
-    {...data,commands:[[2,577],[1,0]]}]) {
-    const before=other.snapshot(),history=other.export();assert.throws(()=>other.replay(invalid));assert.deepEqual(other.snapshot(),before);assert.deepEqual(other.export(),history);
-  }
-  const exported=other.export();exported.commands[0][1]=11;assert.notDeepEqual(other.export(),exported);
+test('theory checks use joint public constraints and do not mutate evidence',async()=>{
+ const e=await fresh(2);const before=e.snapshot();assert.equal(e.theory(4095,0),0);assert.equal(e.theory(0,15),0);
+ assert.throws(()=>e.theory(1,1));assert.equal(e.theory(0,0),15840);assert.deepEqual(e.snapshot(),before);
+ for(let i=0;i<12;i++)e.command(1,i);const a=e.analysis();assert.equal(e.theory(a.good,a.evil),1);assert.equal(e.theory(a.evil,0),0);
 });
-test('native-shaped boundary fuzzing preserves state on rejection',async()=>{
-  const e=await fresh();let seed=19;
-  const rand=n=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed%n;};
-  for(let i=0;i<2000;++i){if(e.snapshot().status)e.reset(1+rand(2));const before=e.snapshot();
-    try{e.command(rand(4),rand(4200)-40);}catch{assert.deepEqual(e.snapshot(),before);}
-    const s=e.snapshot();assert.ok(s.resolve>=0&&s.resolve<=3);assert.ok(s.journal.length<=15);assert.ok(s.opened>=0&&s.opened<=4095);
-  }
+test('replays are v2 and atomic; old solutions and malformed imports never reinterpret a run',async()=>{
+ const e=await fresh(2);e.command(1,5);e.command(1,7);const data=e.export(),snapshot=e.snapshot();assert.equal(data.version,2);
+ const other=await fresh();assert.deepEqual(other.replay(data),snapshot);
+ for(const bad of [null,{...data,version:1},{...data,caseId:99},{...data,commands:[[1,1],[1,1]]},{...data,commands:[[1,'2']]},{...data,commands:[[2,7],[1,99]]}]){
+  assert.throws(()=>e.replay(bad));assert.deepEqual(e.snapshot(),snapshot);assert.deepEqual(e.export(),data);
+ }
 });
-test('casebook assets are local, CSP-compatible, and free of answer tables',async()=>{
-  for(const file of ['casebook.html','casebook.css','casebook.js','cases-engine.js']){
-    const text=await readFile(new URL('../web/'+file,import.meta.url),'utf8');
-    assert.doesNotMatch(text,/(?:src|href)=["']\//);assert.doesNotMatch(text,/https:\/\/(?:fonts|cdn|unpkg)/);
-    assert.doesNotMatch(text,/evil:\s*(1154|577)|"truth"\s*:/);
-  }
-  await mkdir(new URL('../.build/',import.meta.url),{recursive:true});
-  await writeFile(new URL('../.build/case-validation.json',import.meta.url),JSON.stringify({scope:'Sealed dawn only; not the dynamic sandbox',cases:proof},null,2)+'\n');
+test('3,000 boundary actions preserve case state on rejection',async()=>{
+ const e=await fresh();let seed=42;const random=n=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed%n;};
+ for(let i=0;i<3000;i++){if(e.snapshot().status)e.reset(random(2)+1);const before=e.snapshot();try{e.command(random(4),random(4200)-20);}catch{assert.deepEqual(e.snapshot(),before);}assert.ok(e.snapshot().journal.length<=15);}
 });

@@ -2,123 +2,85 @@
 
 *A village of broken truths.*
 
-A single-player deduction game about the difference between an enemy, an innocent liar, and a truthful witness who only **appears** Evil. The UI is static web code; authoritative rules run in compiled C++ WebAssembly.
+A single-player deduction game where a truthful witness can be Evil and an innocent person can be wrong. Presentation is static web code; authoritative rules and the sealed-case solver run in C++ compiled to WebAssembly.
 
-## Play
+**[Play the casebook](https://asr-tanyi.github.io/FALSEWAKE/casebook.html)** | **[Night sandbox](https://asr-tanyi.github.io/FALSEWAKE/)** | [Plan](plan.md) | [Build and deployment](https://github.com/ASR-Tanyi/FALSEWAKE/actions/workflows/ci.yml)
 
-**[Open the sealed casebook](https://asr-tanyi.github.io/FALSEWAKE/casebook.html)** - two authored logic cases with exhaustively validated solutions.
+## v0.4: simple powers, misleading appearances
 
-**[Enter the original night sandbox](https://asr-tanyi.github.io/FALSEWAKE/)** - experiment with roles, wards, Taint, marks, executions, and night attacks.
+- Broad clues say **any apparent Evil / none**, not exact totals. Countkeeper gets an exact count only among the nearest living neighbors, skipping dead seats.
+- Ordinary readings see registration, not True Evil. Devilmask can look Evil while innocent; an unmarked Smokescreen can fool both Lantern Reader and Guild Auditor.
+- Numbered villagers (#01-#12) and distinct role sigils replace generic portrait heads. An unrevealed sigil depicts the claimed character, never the hidden role.
+- Raw clues exclude their speaker, so generated bluffs do not accidentally announce their own Evil identity.
+- Default claims are unique. **New disguises** redraws enemy claims: 90% unused-claim branch, 10% copying a Good Citizen claim, per enemy. The seed is saved; true teams do not move. This is not a procedural village generator.
+- Both sealed cases are rewritten and independently validated. Every supported language (English, Simplified Chinese, Spanish, Japanese) uses the new rules.
 
-These URLs require a successful Pages deployment. Check the [Test, build and deploy workflow](../../actions/workflows/ci.yml) for the exact revision and publishing result.
+Read [the exact v0.4 rules](docs/rules-v04.md). Broader reach and narrower precision are balancing guidelines, not a claim of completed playtesting.
 
-## New in v0.2: the sealed dawn
+## Two modes
 
-**The borrowed voice** asks you to find three enemies while one Good Drunk gives a false count. **The painted saint** adds a Good Devilmask and separates true allegiance, registration, and Burden counts. Enemies can tell the truth in both cases.
+### Sealed casebook
 
-Twelve sealed statements describe one frozen dawn. Open them in any order, keep notes, pin evidence, mark suspects, and submit a trio. Reading is free; wrong trios cost Resolve. After victory or defeat, inspect each witness's actual role and the correct count behind their testimony.
+Twelve unique character claims, twelve short statements at one fixed dawn. Find three enemies while explaining a Good Drunk, and in case 02 a truthful Good Devilmask. Read for free; wrong trios cost Resolve without revealing individual hits. Keep notes, pin evidence, inspect replays, and use an optional evidence-only deduction assistant.
 
-The optional deduction assistant considers only public rules, opened statements, and rejected trios. It starts hidden and can reveal conclusions already forced by that evidence. It never turns personal suspicion labels into facts. Replay inspection and JSON export/import preserve reproducibility, with isolated saves for each case and atomic rejection of malformed imports.
+The independent validator checks **1,980** permitted assignments in case 01 and **15,840** in case 02. Full evidence gives one enemy trio and one placement of the Good Burdens in each. Tests compare every step with the WASM solver and complete a zero-loss winning route. Enemy subtypes are shown in the debrief but are not proof targets. These guarantees do not apply to the dynamic sandbox.
 
-The validator exhausts **1,980** permitted assignments for case 01 and **15,840** for case 02. Full evidence leaves exactly one complete assignment in each, including the Burdens. Tests replay an evidence-derived winning route without Resolve loss. This guarantee applies to these two fixed-dawn cases, **not** the dynamic sandbox or future generated scripts.
+[Sealed-case rules, ABI and replay format](docs/sealed-cases.md).
 
-Read [the exact sealed-case rules and ABI](docs/sealed-cases.md) and [the implementation roadmap](plan.md).
+### Night sandbox
 
-## The night sandbox
+Four investigations per day, one optional execution, three Resolve, night attacks, Wards, marks, Taint, death reveals, and victory/defeat. The actual roster is fixed. Restart replays its disguise seed; New disguises changes enemy claims only.
 
-The original interface remains available with its existing save:
+The useful interactions are real: a mark strips Smokescreen's disguise; a Ward can save a victim but Whisperer leaves them impaired; an impaired Cleanser cannot restore Neverdead; cleansing never cures the permanent Drunk. Historical evidence stores its original numbered targets instead of silently following today's neighbors.
 
-- Circular twelve-seat board, local vector portraits, character inspector, mobile layout, notes, hypotheses, evidence pins, and searchable grimoire.
-- Four investigation actions per day, three Resolve, one optional execution attempt per day, night attacks, death reveals, victory/defeat, and restart.
-- Actual WASM rules. Claims, true roles, registration, and report reliability remain distinct.
-- Courier can remove Smokescreen's disguise. Taint can disable Neverdead. A ward can save a Whisperer victim but leave them impaired. Cleansing cannot cure the permanent Drunk role.
-- Versioned replay saves, keyboard shortcuts, native dialogs, focus outlines, and reduced-motion support.
+## Language and saves
 
-There are seven genuine Citizen role types, two Good Burdens, two Agents, one Tyrant, and an Archivist claim. Roles and authored attacks do not shuffle. This is a mechanics sandbox, not a proven unique deduction puzzle. The 160-role design is a backlog, not implemented content.
+The header's language selector changes both modes without resetting progress. A supported `?lang=` URL takes priority over saved preference, browser languages, and finally English. Character symbols and seat numbers are language-independent. Notes are never translated. [Translation maintenance](docs/i18n.md).
 
-### Exact sandbox ordering
+**Rules v2 starts fresh saves.** Old `falsewake.case.v1` and `falsewake.sealed.v1.*` slots are preserved, not loaded under changed rules. New slots are `falsewake.case.v2` and `falsewake.sealed.v2.*`. Old sealed replays are rejected without changing the current case. The existing language preference is retained.
 
-Day powers resolve immediately in command order. Questioning an arrival memory costs one action and is once per villager per case. Active powers cost one action and are once per day, except Trueglass, once per case. Mara's opening clue is free. Arrival memories are fixed unverified statements, not fresh ability readings.
+## Local development
 
-Execution costs no action. Executing Good costs one Resolve; a failed execution consumes the daily attempt but no Resolve. A ward does not prevent execution. Win by eliminating all three Evil characters, not only the Tyrant. Lose at zero Resolve, no surviving Good, or after twelve nights.
-
-At night: expire old Taint; a living Rotmonger Taints one Citizen; a living Whisperer attacks a marked Good victim or follows its authored priority beginning with Felix; test functioning Neverdead immunity before a real Ward; a survivor becomes Tainted, otherwise dies; expire wards; advance the day, refresh actions, and check the result.
-
-Taint disables beneficial powers and corrupts information until the next night. Binary results flip; a neighbor count adds one modulo three. An impaired Cleanser cannot cleanse itself. Drunk is a permanent role, not curable Taint. A promised ward is not proof of real protection. Marks persist and may be forged by Evil. Death reveals identity and removes registration disguises. Fixed-seat counts include dead neighbors; old reports never change.
-
-## Run locally
-
-Requirements: **Node.js 22+**, **Clang with its WebAssembly target**, and **LLD**. For Ubuntu 24.04:
+Requirements: Node.js 22+, Clang with its WebAssembly target, LLD, and Chrome/Chromium for browser tests. Ubuntu setup:
 
 ```sh
 sudo apt-get update
-sudo apt-get install clang-18 lld-18 libclang-rt-18-dev
+sudo apt-get install clang-18 lld-18 libclang-rt-18-dev fonts-noto-cjk
 export CXX=clang++-18
 npm test
 npm run dev
 ```
 
-Open `http://127.0.0.1:4173/casebook.html` or the root for the sandbox. There are no npm dependencies to install. Set `CXX` for another compatible compiler and `PORT` for a different local port. `npm run dev` builds once, then serves; rerun after source changes. Do not use `file://`, which cannot load modules and WASM normally.
+Open `http://127.0.0.1:4173`. No npm install or runtime dependency is required. `CXX` chooses the compiler; `CHROME` chooses the browser. `PORT` changes the development port. The server binds to loopback. Do not use `file://` for modules/WASM.
 
 ```sh
-npm run build          # Compile both cores and assemble dist/
-npm test               # Both native sanitizer suites, builds, all Node tests
-npm run test:cases     # Sealed-case native + WASM + exhaustive model tests
-npm run test:browser   # Both real-Chrome HTTP integration suites
+npm run build          # Compile both v2 WASM modules and assemble dist/
+npm test               # Native ASan/UBSan, WASM, solver, replay, i18n and fuzz tests
+npm run test:browser   # Real HTTP Chrome tests, all languages, 320/390/1440px
+npm run test:cases     # Sealed-case reference proof and native checks
 npm run preview        # Serve an existing dist/
 ```
 
-The browser tests discover Chrome/Chromium or use `CHROME`. They exercise the `/FALSEWAKE/` project subpath and desktop/390px/320px layouts. Environments that block browser navigation cannot run these HTTP checks; there is no fake-success fallback. GitHub CI runs them before deployment. `.build/case-validation.json` contains the generated proof summary; screenshots are in `.build/screenshots/`.
+The browser suite fails explicitly if an environment blocks local HTTP navigation. A restricted local environment is not reported as a passing browser check. CI runs the actual HTTP suite before publishing.
 
-## Architecture
+## Architecture and public contract
 
-```text
-web/                    UI, CSS, local SVG, copy, and ABI adapters
-  app.js / engine.js    Original night sandbox
-  casebook.js          Sealed-case interface and replay tools
-  cases-engine.js      Sealed-case WASM adapter; no JS rule fallback
-core/engine.cpp         Sandbox rules -> core.wasm
-core/cases.cpp          Sealed-case rules and solver -> cases.wasm
-tests/                  Native checks, WASM tests, independent reference model
-scripts/                Build, serve, native/browser verification
-docs/sealed-cases.md    Precise sealed-case rules, ABI, and proof scope
-.github/workflows/      Existing test/build/artifact/Pages pipeline
-dist/                   Generated site; not committed
-```
+`core/engine.cpp` compiles to `core.wasm`; `core/cases.cpp` compiles to `cases.wasm`. Neither imports a DOM, filesystem, clock, network, or allocator. JavaScript sends numeric commands and renders public observations; it is not a second rules implementation. C++ is portable to a later native bridge, but a WebView can reuse the current WASM unchanged.
 
-The cores are freestanding, deterministic, and allocation-free, with no DOM, filesystem, network, clock, or OS imports. C++ was chosen so native and WASM targets could use the same tested code. The important portable boundary is the ABI, not the source language.
+Sandbox ABI v2: `fw_reset(seed)` accepts a nonnegative 31-bit disguise seed (0 is the curated script); `fw_command(op,source,target)` uses 1 testimony, 2 ability, 3 execution, 4 night. State fields 0-6 are day, Resolve, actions, status, execution-used, event count, seed. Person fields retain alive/claim/asked/used/marked/promised/revealed-role/revealed-team/spent. Event fields 0-5 are kind, day, source, target/reference, value, original subject mask. Report truth and living true roles remain private until explicit reveal.
 
-### Original sandbox ABI v1
+Browser-local WASM is not anti-cheat; deliberate code/memory inspection can discover single-player secrets. API privacy prevents accidental UI leaks, not inspection by the player's own machine.
 
-Arguments/results are signed 32-bit integers. Seat indices are zero-based.
+## CI and Pages
 
-| Export | Contract |
-| --- | --- |
-| `fw_version()` | 1. |
-| `fw_reset()` | Reset the fixed sandbox and free opening clue. |
-| `fw_command(op, source, target)` | 1 question; 2 claimed ability; 3 execute; 4 advance night. Zero is success. Errors do not mutate state. |
-| `fw_state(field)` | 0 day; 1 Resolve; 2 actions; 3 status; 4 execution used; 5 event count. |
-| `fw_person(seat, field)` | 0 alive; 1 claim; 2 questioned; 3 used today; 4 marked; 5 ward promised; 6 revealed role; 7 revealed team; 8 once-per-case spent. |
-| `fw_event(index, field)` | 0 kind; 1 day; 2 source; 3 target/reference; 4 public value. |
+Pushes to `main` trigger native sanitizer checks, both WASM builds, all Node tests, and the unified Chrome suite. Tested static assets and screenshots are retained as artifacts, then Pages publishes from `main`. The same workflow also supports manual dispatch and test-only PR builds. Check the actual publishing step, not only a green build.
 
-Status is 0 playing, 1 won, 2 lost. Hidden roles return 0; hidden teams return -1. True identity becomes public only on death or case completion. Public events do not expose a truth flag. Invalid sources, dead actors, unavailable powers, spent actions, and terminal commands are rejected. The sealed-case API is separate and documented in `docs/sealed-cases.md`.
+Repository Settings > Pages > Source must be **GitHub Actions**. The existing configured site does not need a personal access token. No generated WASM, screenshots, or binaries are committed.
 
-No accounts, telemetry, external runtime assets, or server are used. Saves stay in the browser. Browser WASM is **not anti-cheat**: inspecting source or memory can reveal a single-player answer.
+## Android roadmap
 
-## CI and GitHub Pages
-
-The workflow runs on `main` pushes, PRs, and manual dispatch. Only `main` deploys. It runs native sanitizers, builds both modules, runs Node and both browser suites, then uploads the tested static game and screenshots and deploys Pages. A green build is not proof of deployment: inspect the publish step.
-
-For first-time setup, choose **Settings > Pages > Build and deployment > Source > GitHub Actions**, then rerun. No administrative personal access token is required by the workflow. Artifacts are retained for 14 days. The preexisting license and main history are preserved.
-
-## Toward Android
-
-The planned first Android route bundles the same static UI and WASM in a Capacitor WebView. Relative asset URLs and an environment-independent core support it. WASM alone does not produce an APK. The repository does not yet include an Android project, signing keys, or an APK workflow.
-
-A later milestone must pin Capacitor dependencies, test real device WebViews and offline loading, define back-button and save-migration behavior, add app assets, and build debug APKs. Release signing uses user-controlled secrets, never committed keystores. A native C++ bridge remains optional.
-
-References: [Capacitor Android](https://capacitorjs.com/docs/android), [GitHub Pages workflows](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+A later Capacitor Android shell can bundle the same `dist/` and WASM. No Android project or APK is included yet. Device/offline tests, safe areas, navigation, migration, and a debug APK pipeline are separate tasks; release keys must stay in user-controlled secrets.
 
 ## License
 
-The existing [LICENSE](LICENSE) remains unchanged. Portraits, symbols, and architecture are original local SVG code; no art or text is copied from the reference games.
+The repository's existing [LICENSE](LICENSE) is preserved. The vector sigils and village artwork are local original code. No art or game text is copied from the reference games.

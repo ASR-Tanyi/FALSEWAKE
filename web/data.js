@@ -1,4 +1,5 @@
 import {t} from './i18n.js';
+import {seatNumber,seatList,clueText} from './characters.js';
 export const PEOPLE = [
   ['Mara','The watchful one',0], ['Oren','Keeper of the flame',1],
   ['Silas','A familiar stranger',2], ['Elowen','Lost in a waking dream',3],
@@ -9,65 +10,54 @@ export const PEOPLE = [
 ].map(([name,epithet,portrait],id)=>({id,name,epithet,portrait}));
 // Only this small, implemented script is offered in the first playable case.
 export const ROLES = {
-  1: {name:'Countkeeper',family:'Citizen',icon:'eye',target:false,active:'Read the circle',
-    text:'Learn how many of your two fixed-seat neighbors register as Evil, including dead neighbors.',
-    hint:'Registration is not allegiance. Compare counts before and after a mark.'},
-  2: {name:'Wardmaker',family:'Citizen',icon:'shield',target:true,active:'Promise a ward',
-    text:'Choose another living villager. A functioning ward blocks one night attack, then expires at dawn. It cannot stop an execution.',
-    hint:'A promised ward is not proof that its maker is healthy.'},
-  3: {name:'Archivist',family:'Citizen',icon:'book',target:true,active:'Verify a report',
-    text:'Choose a living villager with a report. Learn whether their latest factual report was true when it was made.',
-    hint:'Verification is itself testimony. An impaired or evil verifier can lie.'},
-  4: {name:'Neverdead',family:'Citizen',icon:'flame',passive:true,
-    text:'You cannot die from an attack or execution while your ability functions. Taint disables this protection.',
-    hint:'Surviving an execution uses the daily attempt, but costs no Resolve.'},
-  5: {name:'Guild Auditor',family:'Citizen',icon:'scales',target:true,active:'Audit a claim',
-    text:'Choose a living villager. Learn whether their claimed role matches their true role.',
-    hint:'A mismatched claim could hide an enemy or a Good Drunk.'},
-  6: {name:'Courier',family:'Citizen',icon:'feather',target:true,active:'Place a mark',
-    text:'Place a lasting, visible mark on a living villager. A marked Smokescreen loses their Good disguise.',
-    hint:'Evil can forge a tangible mark too. Marked Good villagers attract the Whisperer.'},
-  7: {name:'Cleanser',family:'Citizen',icon:'drop',target:true,active:'Perform cleansing',
-    text:'Remove temporary Taint from a living villager. You cannot change a Drunk\'s true role. An impaired Cleanser cannot cleanse.',
-    hint:'Cleansing is not confirmation that a target was ever Tainted.'},
-  8: {name:'Trueglass',family:'Citizen',icon:'star',target:true,active:'Look beyond the mask',once:true,
-    text:'Once per case, learn a living villager\'s true team, ignoring registration disguises. Your own Taint can still corrupt the result.',
-    hint:'A very strong clue, but only from a healthy, genuine Trueglass.'},
-  9: {name:'Drunk',family:'Burden',icon:'moon',passive:true,
-    text:'You are Good but believe you are a Countkeeper. Your neighbor count is false: one higher, wrapping from two back to zero.',
-    hint:'A permanent role, not temporary Taint. Cleansing does not cure you.'},
-  10: {name:'Devilmask',family:'Burden',icon:'mask',passive:true,
-    text:'You are Good, but register as Evil while your ability functions. A true-team check ignores the disguise.',
-    hint:'Correct information about registration can still implicate an innocent.'},
-  11: {name:'Smokescreen',family:'Agent',icon:'moon',passive:true,
-    text:'You are Evil but register as Good until marked. In this case you claim Archivist and invert your verification reports.',
-    hint:'Courier plus Countkeeper can expose the changing registration.'},
-  12: {name:'Rotmonger',family:'Agent',icon:'drop',passive:true,
-    text:'Each night, secretly Taint one living Citizen until the next night. You claim Courier and can forge a visible mark.',
-    hint:'Taint corrupts information and disables beneficial powers. It does not change allegiance.'},
-  13: {name:'Whisperer',family:'Tyrant',icon:'crown',passive:true,
-    text:'Attack one Good villager each night, preferring marked victims. If they survive, Taint them until the next night. You claim Countkeeper.',
-    hint:'A successful rescue may leave the survivor\'s next ability unreliable.'}
+ 1:{name:'Countkeeper',family:'Citizen',icon:'count',target:false,active:'Read the circle',
+    text:'Learn exactly how many of your nearest living neighbors appear Evil. Skip dead seats.',hint:'A wider view gives less detail. Exact counts stay close to home.'},
+ 2:{name:'Wardmaker',family:'Citizen',icon:'shield',target:true,active:'Promise a ward',
+    text:'Choose another living villager. A functioning ward blocks one night attack, then expires at dawn. It cannot stop an execution.',hint:'A promised ward is not proof that its maker is healthy.'},
+ 3:{name:'Archivist',family:'Citizen',icon:'book',target:true,active:'Verify a report',
+    text:'Choose another living villager. Was their latest factual report correct about what it observed?',hint:'A correct report can describe a disguise. Truthful does not mean Good.'},
+ 4:{name:'Neverdead',family:'Citizen',icon:'infinity',passive:true,
+    text:'You cannot die from an attack or execution while your ability functions. Taint disables this protection.',hint:'Surviving an execution uses the daily attempt, but costs no Resolve.'},
+ 5:{name:'Guild Auditor',family:'Citizen',icon:'scales',target:true,active:'Audit a claim',
+    text:"Compare another villager's claimed role with the role you can see. A disguise can fool you.",hint:'A marked Smokescreen no longer looks like the borrowed role.'},
+ 6:{name:'Courier',family:'Citizen',icon:'feather',target:true,active:'Place a mark',
+    text:'Place a lasting, visible mark on another living villager. A marked Smokescreen loses their disguise.',hint:'Evil can forge a tangible mark too. Marked Good villagers attract the Whisperer.'},
+ 7:{name:'Cleanser',family:'Citizen',icon:'drop',target:true,active:'Perform cleansing',
+    text:'Remove temporary Taint from another living villager. An impaired Cleanser cannot cleanse. Drunk is permanent.',hint:'Cleansing is not confirmation that a target was ever Tainted.'},
+ 8:{name:'Lantern Reader',family:'Citizen',icon:'lantern',target:true,active:'Read an appearance',
+    text:'Choose another living villager. Learn whether they appear Evil, not their true team.',hint:'Devilmask looks Evil. An unmarked Smokescreen looks Good.'},
+ 9:{name:'Drunk',family:'Burden',icon:'cup',passive:true,
+    text:'Good, permanently impaired, and unaware. Your claimed information is wrong.',hint:'A permanent role, not temporary Taint. Cleansing does not cure you.'},
+ 10:{name:'Devilmask',family:'Burden',icon:'mask',passive:true,
+    text:'Good, but appears Evil to ordinary readings. Your own information is truthful when healthy.',hint:'Correct information about registration can still implicate an innocent.'},
+ 11:{name:'Smokescreen',family:'Agent',icon:'smoke',passive:true,
+    text:'Evil, but your team and borrowed role appear innocent until you are marked.',hint:'Courier plus Lantern Reader can expose the changing appearance.'},
+ 12:{name:'Rotmonger',family:'Agent',icon:'thorn',passive:true,
+    text:'Each night, secretly Taint one living Citizen until the next night. You borrow a Citizen identity.',hint:'Taint corrupts information and disables beneficial powers. It does not change allegiance.'},
+ 13:{name:'Whisperer',family:'Tyrant',icon:'whisper',passive:true,
+    text:'Attack one Good villager each night, preferring marked victims. A survivor becomes Tainted. You borrow a Citizen identity.',hint:"A successful rescue may leave the survivor's next ability unreliable."},
+ 14:{name:'Lookout',family:'Citizen',icon:'tower',target:true,active:'Survey three seats',
+    text:'From a chosen seat, scan the next three other living villagers clockwise. Learn only whether any appear Evil.',hint:'The numbered targets are recorded with the clue, even if someone later dies.'},
+ 15:{name:'Bellkeeper',family:'Citizen',icon:'bell',target:true,active:'Survey six seats',
+    text:'From a chosen seat, scan the next six other living villagers clockwise. Learn only whether any appear Evil.',hint:'A wider view gives less detail. Exact counts stay close to home.'},
+ 16:{name:'Kinseeker',family:'Citizen',icon:'links',target:true,active:'Compare a pair',
+    text:'Read a chosen villager and the next other living villager clockwise. Do they appear to be on the same team?',hint:'You are excluded from the pair. At least two other villagers must be alive.'},
+ 17:{name:'Taintreader',family:'Citizen',icon:'flask',target:true,active:'Check impairment',
+    text:'Read one other villager: do they appear impaired? This does not distinguish Drunk from Taint.',hint:'Impairment is a condition, not an allegiance.'},
+ 18:{name:'Gatekeeper',family:'Citizen',icon:'gate',target:true,active:'Check one of two',
+    text:'Read a chosen villager and the next other living villager clockwise. Does exactly one appear Evil?',hint:'You are excluded from the pair. At least two other villagers must be alive.'},
+ 19:{name:'Hollow Eye',family:'Citizen',icon:'hollow',target:true,active:'Read a Burden',
+    text:'Read one other villager: do they appear to be a Burden? This is not a team check.',hint:'A condition clue is specific, not a broad scan of true teams.'}
 };
-const TESTIMONY = {
-  1:'A ward lasts until the next dawn. It will not stop the executioner\'s blade.',
-  2:'There is one Burden among seats 03 through 06.',
-  4:'An execution cannot kill me while my power is working.',
-  5:'Of Mara and Thorne, exactly one is lying about their role.',
-  6:'Ada is Evil. Her courier seal is a stolen one.',
-  7:'I can remove Taint, but a Drunk\'s true role cannot be cured.',
-  8:'I register as Evil. That does not make me your enemy.',
-  10:'A mark strips Smokescreen of their disguise. But it can attract the Tyrant.',
-  11:'Three enemies came to this village. Not every false voice belongs to one.'
-};
-export const name = id => PEOPLE[id]?.name || t('The village');
+export const name=seatNumber;
+export const isReport=e=>[2,3,4,8,16,17,18,19,20].includes(e.kind);
 export function eventText(e) {
   const target=name(e.target);
   switch(e.kind) {
-    case 1:return t(TESTIMONY[e.value] || 'The villager has nothing more to add.');
-    case 2:return t(['Neither of my neighbors registers as Evil.','Exactly one of my neighbors registers as Evil.','Both of my neighbors register as Evil.'][e.value]);
-    case 3:return t(e.value?'{target} belongs to the Evil team.':'{target} belongs to the Good team.',{target});
-    case 4:return t(e.value?'{target}\'s claimed role matches their true role.':'{target}\'s claimed role does not match their true role.',{target});
+    case 1:return t(ROLES[e.value]?.text || 'The villager has nothing more to add.');
+    case 2:return e.subjects?clueText({type:2,targets:e.subjects,value:e.value}):t('I have no other living neighbors.');
+    case 3:return clueText({type:3,targets:e.subjects||1<<e.target,value:e.value});
+    case 4:return t(e.value?"{target}'s claim matches their visible role.":"{target}'s claim does not match their visible role.",{target});
     case 5:return t('A mark was attempted on {target}. Check the board for its visible token.',{target});
     case 6:return t('A ward is promised to {target} until the next dawn.',{target});
     case 7:return t('A cleansing ritual was performed on {target}. Permanent roles are unchanged.',{target});
@@ -79,11 +69,16 @@ export function eventText(e) {
     case 13:return t(e.value?'{target} survived a night attack, protected by their immunity.':'{target} survived a night attack, protected by a ward.',{target});
     case 14:return t('Dawn breaks. Four investigations are available.');
     case 15:return t(e.value===1?'Every Evil villager has fallen. The village is free.':'The investigation has ended. The hollow keeps its secrets.');
+    case 16:return clueText({type:1,targets:e.subjects,value:e.value});
+    case 17:return clueText({type:4,targets:e.subjects,value:e.value});
+    case 18:return clueText({type:7,targets:e.subjects,value:e.value});
+    case 19:return clueText({type:6,targets:e.subjects,value:e.value});
+    case 20:return clueText({type:8,targets:e.subjects,value:e.value});
     default:return t('An unknown event was recorded.');
   }
 }
 export function eventLabel(e) {
-  return t(({1:'Testimony',2:'Neighbor count',3:'Team reading',4:'Role audit',5:'Mark',6:'Protection',
+  return t(({1:'Testimony',2:'Neighbor count',3:'Appearance reading',4:'Role audit',5:'Mark',6:'Protection',
     7:'Cleansing',8:'Verification',9:'Execution',10:'Survival',11:'Nightfall',12:'Death',
-    13:'Survival',14:'Dawn',15:'Case closed'})[e.kind] || 'Event');
+    13:'Survival',14:'Dawn',15:'Case closed',16:'Presence check',17:'Pair comparison',18:'Impairment',19:'Burden reading',20:'Pair comparison'})[e.kind] || 'Event');
 }
