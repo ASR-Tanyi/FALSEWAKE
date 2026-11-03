@@ -36,7 +36,7 @@ try {
   async function screenshot(name){await mkdir('.build/screenshots',{recursive:true});const s=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});await writeFile(`.build/screenshots/${name}.png`,Buffer.from(s.data,'base64'));}
   await send('Runtime.enable');await send('Page.enable');
   await send('Emulation.setDeviceMetricsOverride',{width:1440,height:1100,deviceScaleFactor:1,mobile:false});
-  await send('Page.navigate',{url:base+'casebook.html'});await ready();await screenshot('casebook');
+  await send('Page.navigate',{url:base+'casebook.html?lang=en'});await ready();await screenshot('casebook');
   console.log(await evaluate(`(()=>{
     const $=s=>document.querySelector(s),click=s=>{const e=$(s);if(!e)throw Error('Missing '+s);e.click();},check=(x,m)=>{if(!x)throw Error(m);};
     check(document.querySelectorAll('.case-cover').length===3,'Two cases plus sandbox');
@@ -63,9 +63,11 @@ try {
     click('[data-action="home"]');click('[data-action="start"][data-id="1"]');check($('#case-notes').value.includes('<img'),'Case 1 retained');
     for(let i=0;i<12;++i){click('#case-seat-'+i);if(!$('#read-testimony').disabled)click('#read-testimony');}
     click('[data-action="analyze"]');check($('.analysis-summary strong').textContent==='1','Unique assignment');
-    // Extract forced Evil from evidence-derived display, not a hidden solution table.
+    // Match visible, unique witness names instead of assuming comma-only list grammar.
+    // This remains a proof from public evidence, not a hidden solution table.
     const forced=Array.from(document.querySelectorAll('.forced-facts p')).find(p=>p.textContent.startsWith('Forced Evil:')).textContent;
-    const enemyNames=forced.replace('Forced Evil:','').trim().split(', ');
+    const enemyNames=Array.from(document.querySelectorAll('.villager-name'),el=>el.textContent).filter(n=>forced.includes(n));
+    check(enemyNames.length===3,'Public deductions name exactly three enemies');
     for(let i=0;i<12;++i){click('#case-seat-'+i);click('[data-action="tag"][data-id="'+(enemyNames.includes($('.character-hero h2').textContent)?2:0)+'"]');}
     check(!$('#submit-trio').disabled,'Complete trio can be submitted');click('#submit-trio');check($('#modal').open,'Accusation confirmation');
     click('[data-action="confirm-accuse"]');check(!!$('.result-banner.won'),'Evidence-derived winning route');
