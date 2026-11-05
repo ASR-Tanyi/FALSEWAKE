@@ -20,8 +20,15 @@ try{
  socket.addEventListener('message',message=>{const d=JSON.parse(message.data);if(d.id&&pending.has(d.id)){const p=pending.get(d.id);clearTimeout(p.timer);pending.delete(d.id);d.error?p.reject(Error(d.error.message)):p.resolve(d.result);}if(d.method==='Runtime.exceptionThrown')errors.push(d.params.exceptionDetails.text);});
  const send=(method,params={})=>new Promise((resolve,reject)=>{const n=++id,timer=setTimeout(()=>{pending.delete(n);reject(Error(method+' timed out'));},20000);pending.set(n,{resolve,reject,timer});socket.send(JSON.stringify({id:n,method,params}));});
  const evaluate=async expression=>{const r=await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error(r.exceptionDetails.exception?.description||r.exceptionDetails.text);return r.result.value;};
- async function ready(){for(let i=0;i<120;++i){if(await evaluate("!!document.querySelector('[data-ready]')"))return;await new Promise(r=>setTimeout(r,75));}throw Error('Page failed to load: '+await evaluate('document.body.innerText'));}
- async function navigate(path){await evaluate("document.querySelector('[data-ready]')?.removeAttribute('data-ready')");await send('Page.navigate',{url:base+path});await ready();}
+ async function ready(){for(let i=0;i<120;++i){try{if(await evaluate("!!document.querySelector('[data-ready]')"))return;}catch{}await new Promise(r=>setTimeout(r,75));}throw Error('Page failed to load: '+await evaluate('document.body.innerText'));}
+ async function navigate(path){
+  await evaluate("document.querySelector('[data-ready]')?.removeAttribute('data-ready')");
+  const navigation=await send('Page.navigate',{url:base+path});
+  if(navigation.errorText)throw Error(navigation.errorText);
+  // Same-document/hash navigation does not rerun the module or restore readiness.
+  if(!navigation.loaderId)await send('Page.reload');
+  await ready();
+ }
  async function screenshot(name){await mkdir('.build/screenshots',{recursive:true});const png=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});await writeFile(`.build/screenshots/${name}.png`,Buffer.from(png.data,'base64'));}
  await send('Runtime.enable');await send('Page.enable');
  await send('Emulation.setDeviceMetricsOverride',{width:1440,height:1100,deviceScaleFactor:1,mobile:false});
