@@ -5,10 +5,12 @@ namespace fw {
 constexpr int N=12, CAP=512;
 enum Role { Countkeeper=1,Wardmaker,Archivist,Neverdead,Auditor,Courier,
     Cleanser,Lantern,Drunk,Devilmask,Smokescreen,Rotmonger,Whisperer,
-    Lookout,Bellkeeper,Kinseeker,Taintreader,Gatekeeper,HollowEye };
+    Lookout,Bellkeeper,Kinseeker,Taintreader,Gatekeeper,HollowEye,Wardbreaker };
 enum Kind { Testimony=1,Count,Registration,Audit,Mark,Ward,Cleanse,
     Verification,Executed,Survived,Night,Killed,Saved,Dawn,End,
-    Presence,Relation,Impairment,Burden,Exclusive };
+    Presence,Relation,Impairment,Burden,Exclusive,
+    // 21-22 are reserved for the Nightfall verdict/charter.
+    WardRemoved=23 };
 struct Person {int role,claim,evil,alive,asked,used,spent,taint,marked,ward,promised;};
 struct Event {int kind,day,source,target,value,subjects,truth;};
 Person p[N]; Event events[CAP];
@@ -61,7 +63,7 @@ void report_count(int source){
 void binary(int kind,int a,int b,int actual,int mask){
     int value=lies(a)?1-actual:actual;emit(kind,a,b,value,mask,value==actual);
 }
-bool informational(int role){return role==Countkeeper||role==Auditor||role==Lantern||role>=Lookout;}
+bool informational(int role){return role==Countkeeper||role==Auditor||role==Lantern||(role>=Lookout&&role<=HollowEye);}
 void information(int a,int b){
     const int role=p[a].claim;
     if(role==Countkeeper){report_count(a);return;}
@@ -76,7 +78,7 @@ void information(int a,int b){
 }
 int last_report(int source){
     for(int i=size-1;i>=0;--i){int k=events[i].kind;
-        if(events[i].source==source&&((k>=Count&&k<=Audit)||k==Verification||k>=Presence))return i;}
+        if(events[i].source==source&&((k>=Count&&k<=Audit)||k==Verification||(k>=Presence&&k<=Exclusive)))return i;}
     return -1;
 }
 void testimony(int a){
@@ -106,7 +108,7 @@ int use(int a,int b){
     if(actions<=0)return 4;
     if(p[a].used==day)return 5;
     int role=p[a].claim,ref=-1;
-    if(role==Neverdead||role==Devilmask)return 6;
+    if(role==Neverdead||role==Devilmask||role==Wardbreaker)return 6;
     if(role!=Countkeeper&&a==b)return 8;
     if((role==Kinseeker||role==Gatekeeper)&&pop(subjects(a,b,2))!=2)return 8;
     if(role==Archivist){ref=last_report(b);if(ref<0)return 9;}
@@ -143,7 +145,14 @@ int command(int op,int a,int b){
             int victim=-1;for(int i=0;i<N;++i)if(p[i].alive&&!p[i].evil&&p[i].marked){victim=i;break;}
             constexpr int priority[N]={7,1,11,5,0,10,4,3,8,2,6,9};
             if(victim<0)for(int i:priority)if(p[i].alive&&!p[i].evil){victim=i;break;}
-            if(victim>=0){bool immortal=p[victim].role==Neverdead&&!impaired(victim);
+            if(victim>=0){
+                // Removal is sabotage, NOT consumption by a blocked attack.
+                // No attacker/source identity is published by this observation.
+                if(living_role(Wardbreaker)>=0&&p[victim].ward){
+                    p[victim].ward=0;p[victim].promised=0;
+                    emit(WardRemoved,-1,victim,0,bit(victim));
+                }
+                bool immortal=p[victim].role==Neverdead&&!impaired(victim);
                 if(immortal||p[victim].ward){if(!immortal)p[victim].ward=0;
                     emit(Saved,-1,victim,immortal?1:0);p[victim].taint=1;}
                 else {p[victim].alive=0;emit(Killed,-1,victim);}}

@@ -3,3 +3,19 @@
 @media(max-width:370px){.nf-seal{display:none}.nf-heading h1{font-size:32px}.nf-metrics{gap:10px}.nf-metrics>span{font-size:9px}.nf-token{width:18px;height:18px}.nf-token .icon{width:10px;height:10px}.nf-progress>span{font-size:9px;gap:5px;padding:12px 10px}}
 
 .nf-objective{font-size:13px;line-height:1.9;color:#c5c7b3;margin:-8px 0 18px;max-width:850px}
+
+/* Case selection is ordinary navigation, not a hidden-role hint. */
+.nf-library{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 25px}
+.nf-case-card{display:flex;gap:16px;align-items:center;text-align:left;padding:17px 20px;background:#192223;border:1px solid var(--line);border-radius:6px;color:#b9c3b5;min-width:0;min-height:94px;cursor:pointer}
+.nf-case-card.active{background:linear-gradient(120deg,#2d3027,#1b2727);border-color:#a78e59}
+.nf-case-symbol{display:grid;place-items:center;border:1px solid #766b4b4f;border-radius:50%;width:50px;height:50px;flex-shrink:0;color:#c5af7f}
+.nf-case-symbol .icon{width:28px;height:28px}
+.nf-case-copy{display:flex;flex-direction:column;gap:5px;min-width:0}
+.nf-case-copy small{font-size:9px;letter-spacing:1.4px;color:#b1a17d}
+.nf-case-copy strong{font:400 22px/1.3 Georgia,serif;color:#e1d5bc;overflow-wrap:anywhere}
+.nf-case-status{font-size:11px;color:#a4bda9}
+.nf-threat{display:flex;gap:12px;align-items:flex-start;padding:14px 18px;border-left:2px solid #c99d6d;background:#44312133;color:#d3c3a6;font-size:13px;line-height:1.8;margin:0 0 18px}
+.nf-threat .icon{width:25px;height:25px;flex-shrink:0}
+.nf-promo-links{display:flex;flex-direction:column;gap:10px;min-width:180px}
+@media(max-width:690px){.nf-library{gap:8px}.nf-case-card{padding:12px;gap:9px;align-items:flex-start}.nf-case-symbol{width:30px;height:30px}.nf-case-symbol .icon{width:20px;height:20px}.nf-case-copy strong{font-size:17px}.nf-case-copy small{font-size:8px;letter-spacing:.8px}.nf-case-status{font-size:10px}.nf-threat{font-size:12px}.nf-library .nf-case-card{min-height:108px}}
+@media(max-width:370px){.nf-case-card{flex-direction:column;gap:8px}.nf-case-copy strong{font-size:17px}}

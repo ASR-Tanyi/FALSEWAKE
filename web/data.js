@@ -49,6 +49,11 @@ export const ROLES = {
  19:{name:'Hollow Eye',family:'Citizen',icon:'hollow',target:true,active:'Read a Burden',
     text:'Read one other villager: do they appear to be a Burden? This is not a team check.',hint:'A condition clue is specific, not a broad scan of true teams.'}
 };
+// Nightfall-only roles do not silently expand the sandbox script or bluff pool.
+export const NIGHTFALL_ROLES={...ROLES,
+ 20:{name:'Wardbreaker',family:'Agent',icon:'broken-shield',passive:true,
+    text:"Before the Whisperer attacks, remove the intended victim's Ward. This does not remove immunity.",hint:'A removed Ward never blocks the attack. Removal is not consumption. Available in The hollow ward.'}
+};
 export const name=seatNumber;
 export const isReport=e=>[2,3,4,8,16,17,18,19,20].includes(e.kind);
 export function eventText(e) {
@@ -73,6 +78,7 @@ export function eventText(e) {
     case 17:return clueText({type:4,targets:e.subjects,value:e.value});
     case 18:return clueText({type:7,targets:e.subjects,value:e.value});
     case 19:return clueText({type:6,targets:e.subjects,value:e.value});
+    case 23:return t("{target}'s Ward was removed before the attack. It did not block anything.",{target});
     case 20:return clueText({type:8,targets:e.subjects,value:e.value});
     default:return t('An unknown event was recorded.');
   }
@@ -80,5 +86,5 @@ export function eventText(e) {
 export function eventLabel(e) {
   return t(({1:'Testimony',2:'Neighbor count',3:'Appearance reading',4:'Role audit',5:'Mark',6:'Protection',
     7:'Cleansing',8:'Verification',9:'Execution',10:'Survival',11:'Nightfall',12:'Death',
-    13:'Survival',14:'Dawn',15:'Case closed',16:'Presence check',17:'Pair comparison',18:'Impairment',19:'Burden reading',20:'Pair comparison'})[e.kind] || 'Event');
+    13:'Survival',14:'Dawn',15:'Case closed',16:'Presence check',17:'Pair comparison',18:'Impairment',19:'Burden reading',20:'Pair comparison',23:'Ward removed'})[e.kind] || 'Event');
 }

@@ -1,84 +1,60 @@
 # FALSEWAKE implementation plan
 
-## Current milestone: v0.5 - the first Nightfall investigation
+## Current milestone: v0.6 - a second Nightfall investigation
 
-Continue directly on `main`, with tested builds deployed through GitHub Pages. The new playable feature is **The warded lantern**, an authored three-day/two-night teaching case using the existing C++ night simulation. It demonstrates how a successful rescue can impair a witness, why cleansing must precede a reading, and how a mark can expose a disguise or endanger an innocent.
+Continue directly on `main`, with tested builds deployed through GitHub Pages. **The hollow ward** adds one new enemy interaction: Wardbreaker removes a Ward before an attack, but cannot remove immunity. The public roster replaces Rotmonger with Wardbreaker. This is an authored chapter using the shared C++ simulation, not a new procedural generator.
 
-The precise contract and proof limits are in [docs/nightfall.md](docs/nightfall.md). This is a bounded dynamic-script milestone, not completion of an unrestricted role engine or a procedural village generator.
+The chapter selector provides independent progress, notes, pins and replay saves. Both chapters remain accessible immediately. Chapter 01 keeps its rules and existing save. Exact rules, effect ordering, proof limits and additive API details are in [docs/hollow-ward.md](docs/hollow-ward.md).
 
-### Deliverables and acceptance gates
+### Acceptance gates
 
-- A dedicated `nightfall.html` entry point linked from the casebook and sandbox, with numbered role sigils, certified-helper/suspect labels, action budget, two-night progression, and final trio verdict.
-- Public charter: four suspects contain one Good Drunk, Smokescreen, Rotmonger and Whisperer. Eight helpers have certified identities, not guaranteed health. Normal readings still see appearances.
-- An initial mark on #12; normal wards, marks, Taint, cleansing, attacks and historical reports resolve in the shared engine. No duplicate JavaScript runtime rules.
-- Immutable event timeline with target filtering, pins, visible night summaries, annotations, and post-case report review.
-- Optional dynamic analyst: replay all 24 public-roster arrangements and compare only observable histories, not secret identities or truth flags.
-- Native and independent-reference proofs that an observation-based policy wins in all 24 permitted worlds without deaths or lost Resolve and within the actual action budget.
-- Counterexamples for omitted protection, reading before cleansing, and marking an innocent who then attracts the attack. Invalid, repeated and terminal actions are atomic.
-- Separate replay/save schema; old sandbox and sealed cases are untouched. Malformed imports preserve the live run.
-- Complete English, Simplified Chinese, Spanish and Japanese presentation, with catalog/placeholder checks and real-browser workflows at desktop and mobile widths.
-- Existing suites plus the new sanitizer, model, replay, fuzz and browser tests must pass before Pages publishes.
+- Ward removal is a distinct public event, not protection consumption or expiry. It reveals an affected seat, never the hidden saboteur.
+- One new role, a unique sigil, short ability text, no broad exact-count or True Evil scan.
+- Separate case selection in the core; invalid IDs and malformed cross-case replays are atomic.
+- Evidence analysis uses the selected public roster and restores the complete live case after enumeration.
+- Native and independent-reference tests verify a safe observation-based winning policy in all 24 permitted chapter-02 arrangements within the budget, with everyone alive and no Resolve loss.
+- Counterexamples cover relying on a Ward alone and redirecting danger toward an innocent. Source-death behavior and actual-Ward versus promised-Ward distinctions are explicit.
+- Original first-case behavior remains compatible. A local differential test compares 4,000 commands and analyses against the deployed v0.5 WASM; existing CI regression suites still run.
+- Case-local saves, status cards, deep links, notes, pins, reset and replay import/export work in all four languages.
+- Native sanitizers, all Node suites and real-HTTP browser suites must pass before Pages deployment. Check the actual publish job, not just a green build.
 
-The proof identifies the enemy trio and Good Drunk. Rotmonger and Whisperer can remain interchangeable. Do not claim a unique full assignment when the observations only prove the team.
+The proof establishes the enemy trio and Good Drunk, not every enemy subtype. Wardbreaker and Whisperer can remain indistinguishable. This is a bounded teaching case; eight certified helpers remain a published premise.
 
-## Non-negotiable design commitments from v0.4
+## Non-negotiable design commitments
 
-1. **Broader scope gives less detail.** Three/six-person readings answer apparent Evil present/absent. Exact counts stay with the nearest living neighbors. Keep each power to one short question.
-2. **Read appearances, not True Evil.** Team, visible role, claim, impairment and report truth remain distinct. Disguises fool ordinary checks. Death/end-of-case revelation is explicit.
-3. **Distinct numbered characters.** Keep #01-#12 and a specific role sigil. Unrevealed symbols depict claims, never hidden roles. Default identities are unique; sandbox enemy claims prefer unused roles 90% of the time and deliberately copy a Good claim 10% per enemy.
-4. **Believable testimony.** Raw scopes exclude their speaker. Evil may be truthful. A historical clue retains its original targets and time after deaths, marks or changed reliability.
+1. **Broad scope means less detail.** Three/six-person readings report apparent Evil present/absent. Exact counts stay with nearest living neighbors. Keep each ability to one short question.
+2. **Appearances are not True Evil.** True team, registered team, visible role, claim and impairment remain separate. Explicit death/end reveals are not ordinary scans.
+3. **Distinct numbered characters.** Use #01-#12 and claim-based sigils, never hidden-role art. Default identities are unique. Sandbox enemy bluffs use a 90% unused / 10% deliberate-copy branch per enemy.
+4. **Believable testimony and history.** Raw information scopes exclude the speaker; Evil may be truthful. Old reports preserve their actual time and numbered targets.
 
-See [docs/rules-v04.md](docs/rules-v04.md). Relative role strength still needs playtesting; simple text alone is not proof of balance.
+Relative ability strength still needs playtesting. More complicated wording is not a substitute for balance. See [docs/rules-v04.md](docs/rules-v04.md).
 
 ## Delivered foundation
 
-### M1: portable game interface
+- **Portable interface:** responsive village, inspector, notes, hypotheses, grimoire, budgets, executions, protection, corruption, death reveals and terminal states. C++/WASM rules, no JavaScript runtime fallback, local saves and CI/Pages.
+- **Sealed cases:** two fixed-dawn puzzles, public-evidence solver, independent reference proofs, hints, debriefs and replay tools. Proof covers enemy teams and Good Burdens, not all enemy subtypes.
+- **Four languages:** English, Simplified Chinese, Spanish and Japanese; numeric state and symbols stay language-independent. Notes are never translated. Native-speaker editorial review is still desirable.
+- **Nightfall chapter 01:** The warded lantern, a three-day/two-night case about protection, impaired witnesses and cleansing order. A safe policy is checked in all 24 public-roster arrangements.
+- **Nightfall chapter 02:** The hollow ward, about removal versus consumption, immunity, and the order of impairment expiry. It has its own 24-arrangement proof and save.
 
-Twelve-seat village, inspector, notes, hypotheses, evidence pins, searchable grimoire, budgets, executions, attacks, wards, marks, Taint, death reveals and terminal states. Authoritative C++/WASM, local command-replay saves and CI/Pages. No accounts, backend, telemetry or external runtime assets. Existing license preserved.
+## Next: uncertainty in helpers
 
-### M2a: sealed cases
+Remove one certified-helper guarantee only after modeling all permitted helper conditions and proving a safe evidence-based policy. Do not simply add an unannounced liar. Give the player a visible reason to investigate reliability and an affordable way to recover. Introduce only one new ambiguity or ability interaction at a time.
 
-Two authored fixed-dawn puzzles with short claims, public-rule enumeration, optional assistant, hints, debrief, theory checks and JSON replay. v0.4 re-authored and re-proved the enemy teams and Burden positions with independent reference models. Their proof does not cover the unrestricted night sandbox.
+Keep the interaction matrix: Courier + Smokescreen + Lantern/Auditor; Wardmaker + Whisperer; impaired Cleanser; Neverdead + Taint; Drunk versus cleansing; historical neighbors; Wardbreaker + Wardmaker + Neverdead. Separate expiry, removal and consumption before any reactive power depends on them.
 
-### Localization
+## Later milestones
 
-Four-language catalogs are shared by every mode. IDs, numbers, symbols and command schemas remain language-independent. Personal notes are never translated. Translations are an initial editorial pass; independent native-speaker review remains valuable.
+**Reusable effects:** define shared phase primitives, source-death behavior, durations and bounded trigger queues when multiple cases need them. Then add visits, bonds and multiple attack sources, with private/public views and loop-termination tests.
 
-### M2b: bounded dynamic-script rigor
+**Procedural cases:** seeded hidden-world generation, reproducible IDs, difficulty measurements, unique team/Burden constraints and action-budget win-policy proofs. New disguises remains claim randomization only. Reject ambiguous or unwinnable generated cases.
 
-Nightfall now supplies a concrete action-budget and survival proof, public/private event separation, and reproducible counterexamples. The certified helper roster is an explicit teaching premise. No claim is made that every character in an ordinary hidden-role village can be trusted.
-
-## Next: expand dynamics without overwhelming the player
-
-- Add a second authored Nightfall case with one new interaction at a time; retain short, understandable abilities.
-- Remove one certified-helper guarantee only after the expanded hypothesis model and win policy are verified.
-- Promote phase ordering and duration semantics into reusable primitives when a second case demonstrates the need.
-- Keep a role-interaction matrix covering Courier + Smokescreen + Lantern/Auditor, Wardmaker + Whisperer, impaired Cleanser, Neverdead + Taint, Drunk vs cleansing, and living-neighbor/history changes.
-- Distinguish ward consumption, removal and expiry. Define source-death behavior before introducing reactive powers.
-- Test misleading but legal public histories, not merely the authored answer. Prove a valid policy under the actual action budget and enemy behavior.
-
-## Later: generalized synergy engine
-
-Introduce reusable triggers, selectors, durations, visits, bonds, multiple attack sources and bounded reaction queues. Preserve historical snapshots. Keep public and private event views separate. Test termination and registration recursion before adding combinations. Identity-copying roles must explicitly authorize duplicate claims.
-
-## Later: procedural cases
-
-New disguises changes enemy claims only; it does not generate the hidden village. Real procedural generation needs seeded roles/worlds, reproducible IDs, uniqueness and action-budget validation, difficulty measures, and rejection of ambiguous or unwinnable cases.
-
-## Later: Android
-
-Bundle the static interface and WASM in a Capacitor Android WebView. WASM alone does not produce an APK. A separate milestone must provide the Android project, pinned dependencies, device/offline tests, safe areas, back navigation, save migration, icons and debug APK CI. Release signing stays in user-controlled secrets; no committed keys.
+**Android:** bundle the static UI and WASM in a Capacitor shell. Add pinned dependencies, real WebView/device tests, offline asset checks, safe areas/back navigation, migration, icons and debug APK CI. Release keys remain user-controlled secrets. No APK is delivered by this milestone.
 
 ## Architecture and compatibility
 
-- `core/engine.cpp`: sandbox simulation and ABI v2; living enemy sources now located by role instead of fixed seat. Original roster behavior is preserved.
-- `core/bluffs.h`: deterministic unused-versus-copy claim allocator.
-- `core/cases.cpp`: sealed-case state and static evidence enumeration, ABI v2.
-- `core/nightfall.cpp`: includes the same simulation, adds the bounded mission and public-history analyst, exports `fn_*` ABI v1.
-- `web/`: presentation, numeric adapters, symbols, escaped notes and local catalogs. No alternative JavaScript rules implementation.
-- `tests/`: native sanitizer assertions, independent test-only models, replay, rejected-action atomicity, fuzzing and translation coverage.
-- `scripts/`: builds, local server and real-HTTP Chrome suites.
-- `docs/`: exact rules and limits of each proof.
-- `dist/`, `.build/`: generated artifacts only; do not commit WASM, screenshots or reference outputs.
+`core/engine.cpp` remains the simulation shared by sandbox and Nightfall. `core/nightfall.cpp` supplies case selection, public rosters, mission bounds and dynamic analysis. `core/cases.cpp` supplies the separate sealed-case solver. `web/nightfall-cases.js` contains public descriptions only, never answers. Test-only reference models never enter `dist/`.
 
-Nightfall uses `falsewake.nightfall.v1`; existing sandbox, sealed and language slots remain compatible. Keep relative URLs for Pages and future WebViews. Browser-local WASM is not an anti-cheat boundary. Do not force-push, alter the license, request broad tokens, or announce deployment success without checking the publishing job.
+Chapter 01 keeps `falsewake.nightfall.v1`; chapter 02 adds `falsewake.nightfall.v1.hollow-ward`. Existing sandbox, sealed and language slots remain compatible. Additive fn_select and state field 10 preserve ABI v1's original entry points and snapshot shape.
+
+Keep relative URLs, local assets, escaped annotations and accessible text beside sigils. Browser WASM is not anti-cheat. Never force-push, change the existing license, commit generated binaries/screenshots, or request a broad access token.

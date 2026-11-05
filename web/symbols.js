@@ -1,5 +1,6 @@
 // Distinct original role sigils. Render the CLAIM, never a hidden true identity.
 export const SYMBOLS={
+ 'broken-shield':'<path d="m12 2 9 4v6c0 5-9 10-9 10S3 17 3 12V6l9-4Z"/><path d="m14 3-4 6 4 3-4 6 2 4M1 3l3 1m16 16 3 1"/>',
  count:'<circle cx="6" cy="12" r="3"/><circle cx="18" cy="12" r="3"/><path d="M9 12h6M12 3v4m0 10v4"/>',
  shield:'<path d="m12 2 9 4v6c0 5-9 10-9 10S3 17 3 12V6l9-4Z"/><path d="m8 12 3 3 5-6"/>',
  book:'<path d="M12 5C8 2 4 3 2 4v16c4-2 7-1 10 1 3-2 6-3 10-1V4c-4-1-7-2-10 1Zm0 0v16M5 8h4m6 0h4M5 12h4m6 0h4"/>',

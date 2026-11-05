@@ -6,35 +6,33 @@ A single-player deduction game where a truthful witness can be Evil and an innoc
 
 **[Play Nightfall](https://asr-tanyi.github.io/FALSEWAKE/nightfall.html)** | [Sealed casebook](https://asr-tanyi.github.io/FALSEWAKE/casebook.html) | [Night sandbox](https://asr-tanyi.github.io/FALSEWAKE/) | [Plan](plan.md) | [CI](https://github.com/ASR-Tanyi/FALSEWAKE/actions/workflows/ci.yml)
 
-## New in v0.5: The warded lantern
+## New in v0.6: The hollow ward
 
-The first **Nightfall investigation** spans three days and two nights. Keep all twelve villagers alive, then identify three enemies among four suspects. The fourth is a Good Drunk. Eight certified helpers introduce the difference between knowing a role and trusting its current ability.
+The second Nightfall investigation adds **Wardbreaker**: an enemy who removes the intended victim's Ward before the Whisperer attacks. Removal is not consumption, and a Ward is not immunity. The public charter replaces Rotmonger with Wardbreaker; timing now changes which protections will work.
 
-A Ward can save the Lantern Reader while Whisperer leaves them Tainted. Cleanse before reading; cleansing afterward cannot repair the past. A Courier mark strips Smokescreen's disguise, but marking an innocent can redirect the attack. Ordinary powers still see appearances, not True Evil.
+**[Play chapter 02](https://asr-tanyi.github.io/FALSEWAKE/nightfall.html#case=hollow-ward)**. A chapter selector tracks each investigation's local status. Switch freely without losing the other case's actions, notes or pinned evidence. Each case has its own save and explicit replay case ID. All new text is available in English, Simplified Chinese, Spanish and Japanese.
 
-The new screen includes an immutable timeline, per-villager comparison, pinned evidence, night summaries, private notes, optional reasoning hints and an evidence-only dynamic assistant. Saves and JSON replays are independent of the other modes. English, Simplified Chinese, Spanish and Japanese work throughout.
+Native tests and an independent model verify a safe, observation-based strategy in every one of chapter 02's 24 permitted initial arrangements, within the action budget, without deaths or Resolve loss. The enemy trio is determined; Wardbreaker and Whisperer can remain interchangeable. This is an authored teaching case, not a randomly generated or unrestricted village. [Exact rules, proof scope and compatibility](docs/hollow-ward.md).
 
-The analyst replays **24 public-roster arrangements** using the same night simulation. Independent tests compare public state and deductions after each action. Both native and reference tests verify an observation-based winning policy in all 24 arrangements, within the budget, with everyone alive and no Resolve lost. Rotmonger and Whisperer can remain interchangeable: the proof identifies the enemy trio, not every subtype. This guarantee belongs to the bounded teaching case and its published enemy policy, not an unrestricted or generated village.
+## Three modes
 
-[Exact Nightfall rules, ABI and proof scope](docs/nightfall.md).
+**Nightfall:** two three-day/two-night investigations with certified helpers, four suspects, immutable timelines, notes, pins, hints, optional evidence-only analysis and replay import/export. Chapter 01, *The warded lantern*, teaches why protection does not make a rescued investigator reliable, and why cleansing must precede a reading. Its original rules, save and 24-arrangement proof are unchanged. [Chapter 01 rules](docs/nightfall.md).
 
-## Existing modes
+**Sealed casebook:** two fixed-dawn cases. Broad clues report presence rather than exact totals; focused clues can be more precise. Find three enemies while explaining Good Drunk/Devilmask effects. Independent exhaustive validation covers 1,980 assignments in case 01 and 15,840 in case 02. Full evidence determines the enemy trio and Good Burden positions, not necessarily every enemy subtype. [Rules](docs/sealed-cases.md).
 
-**Sealed casebook:** two fixed-dawn logic cases with twelve distinct numbered claims. Broad clues give presence, not exact totals; focused readings can be more precise. Find three enemies while explaining Good Drunk/Devilmask effects. Read for free, annotate, inspect evidence, and submit a trio. Independent exhaustive validation covers 1,980 assignments in case 01 and 15,840 in case 02. Full evidence leaves one enemy team and one placement of the Good Burdens, not necessarily unique enemy subtypes. [Rules](docs/sealed-cases.md).
+**Night sandbox:** four investigations and one optional execution per day, three Resolve, attacks, Wards, marks, Taint, death reveals and endings. The roster is fixed. **New disguises** changes enemy claims with a deterministic 90% unused / 10% copied-claim branch per enemy. The sandbox has no general uniqueness or win-policy proof. Wardbreaker is chapter-02-only, not added to its roster or bluff pool. [Rules](docs/rules-v04.md).
 
-**Night sandbox:** four investigations and one optional execution per day, three Resolve, attacks, protection, Taint, marks, death reveals and end states. The actual roster is fixed; **New disguises** changes enemy claims with a seeded 90% unused / 10% copy policy per enemy. It is not a procedural village generator. Useful interactions are real, but the sandbox has no general uniqueness or win-policy proof. [Rules](docs/rules-v04.md).
-
-All modes use #01-#12 and distinct claim-based sigils rather than generic heads. Raw informational scopes exclude the speaker. Masks can fool both team and role readings; truthfulness does not establish allegiance.
+All modes use #01-#12 and claim-based role sigils. Raw information scopes exclude the speaker. Ordinary readings see appearances, not True Evil. A truthful observation can describe a disguise. Old reports retain their original targets and time.
 
 ## Languages and saves
 
-The header selector switches English, Simplified Chinese, Spanish and Japanese without restarting. A supported `?lang=` URL overrides saved preference, browser-language negotiation and the English fallback. Notes are never translated. [Translation maintenance](docs/i18n.md); Nightfall messages are in `web/locales/nightfall.js`.
+The header selector switches English, Simplified Chinese, Spanish and Japanese without resetting progress. Supported `?lang=` parameters take priority over saved preference, browser languages, then English. Notes remain exactly as written. [Translation maintenance](docs/i18n.md). New chapter text is in `web/locales/hollow.js`.
 
-Nightfall adds only `falsewake.nightfall.v1`. Existing `falsewake.case.v2`, `falsewake.sealed.v2.*`, older v1 slots, and `falsewake.language.v1` remain untouched. Different rules/replay formats are not silently interchanged. Invalid Nightfall replay imports preserve the active case.
+Nightfall chapter 01 keeps `falsewake.nightfall.v1`; chapter 02 adds `falsewake.nightfall.v1.hollow-ward`. Existing sandbox, sealed, older v1 slots and `falsewake.language.v1` remain untouched. Malformed cross-case imports restore the exact previous case and history. Chapter statuses are local navigation indicators, not server achievements. Reset affects only the selected investigation.
 
-## Run locally
+## Local development
 
-Requirements: Node.js 22+, Clang with the WebAssembly target, LLD, and Chrome/Chromium for browser tests. On Ubuntu:
+Node.js 22+, Clang with its WebAssembly target, LLD, and Chrome/Chromium for browser tests. Ubuntu:
 
 ```sh
 sudo apt-get update
@@ -44,38 +42,31 @@ npm test
 npm run dev
 ```
 
-Open `http://127.0.0.1:4173/nightfall.html`. No npm install is needed. `CXX` chooses the compiler; `CHROME` the browser; `PORT` the loopback development port. Serve over HTTP, not `file://`.
+Open `http://127.0.0.1:4173`. No npm install is needed. `CXX`, `CHROME` and `PORT` select the compiler, browser and local server port. Do not open the modules/WASM through `file://`.
 
 ```sh
-npm run build          # Existing modules, then shared-core Nightfall wrapper
-npm test               # Three native sanitizer suites and all Node tests
-npm run test:cases     # Existing sealed-case validation
-npm run test:nightfall # Bounded dynamic policy, reference, replay and fuzz tests
-npm run test:browser   # Existing suite plus multilingual Nightfall HTTP flows
-npm run preview        # Serve an existing dist/
+npm run build          # Compile the three WASM modules and assemble dist/
+npm test               # All native sanitizer, WASM, reference, replay, fuzz and i18n suites
+npm run test:browser   # Real HTTP Chrome flows for all modes and four languages
+npm run test:nightfall # Both Nightfall cases, including their proof policies
+npm run test:cases     # Sealed-case proofs
+npm run preview        # Serve an existing build
 ```
 
-Native and independent reference checks validate gameplay. Browser checks exercise the actual controls, persistence, full evidence-to-victory path, imports, languages and 1440/390/320px layouts. An environment that blocks local HTTP fails that integration test explicitly; offline layout rendering is not counted as an HTTP pass. CI must run the real suite before deployment.
+Browser tests fail explicitly when local HTTP navigation is blocked. CI runs the actual browser suites before Pages publishes, including 1440/390/320px layouts. Screenshots and a static web bundle are downloadable workflow artifacts. Generated WASM, proof reports and screenshots are not committed.
 
 ## Architecture
 
-- `core/engine.cpp` -> `core.wasm`: dynamic sandbox, ABI v2.
-- `core/cases.cpp` -> `cases.wasm`: sealed-case state and evidence solver, ABI v2.
-- `core/nightfall.cpp` -> `nightfall.wasm`: **includes the same sandbox simulation**, with a mission boundary and replay-based analyst, ABI v1.
-- `web/`: presentation, numeric adapters, local SVG symbols, catalogs, and annotations.
-- `tests/`: native assertions and independent test-only reference models; never shipped in `dist/`.
-- `scripts/`: deterministic builds, HTTP serving and Chrome tests.
+`core/engine.cpp` is the shared sandbox/Nightfall simulation. `core/cases.cpp` contains the sealed-case solver. `core/nightfall.cpp` supplies bounded missions and an analyst that replays only public-rule worlds against public observations. The cores import no DOM, network, filesystem, clock or allocator. Independent JavaScript models exist only in tests, never in the shipped game.
 
-The cores import no filesystem, clock, network, DOM or allocator. The browser renders public observations and sends numeric commands; there is no JavaScript rules fallback. Historical reports retain their original targets. Source death is checked by role rather than assuming an enemy always occupies a particular seat.
+Nightfall ABI v1 is extended with `fn_select(1|2)` and state field 10; original `fn_reset()` still selects chapter 01. Existing snapshots/replay schemas remain compatible. Chapter metadata in the browser contains no hidden answers. Browser-local WASM is not an anti-cheat barrier; deliberate source/memory inspection can reveal single-player secrets.
 
-WASM on a player's own device is inspectable, not an anti-cheat boundary. Public getters prevent accidental interface leaks, not deliberate source/memory inspection.
+## CI and Android
 
-## CI, Pages and Android
+Every push to `main` runs the complete test/build/browser pipeline and deploys only its passing artifact to GitHub Pages. Pages must be configured to use GitHub Actions. Check the actual publish job rather than just a successful build. No personal access token is needed for normal deployment.
 
-Pushes to `main` run native sanitizers, all WASM builds, reference/replay/fuzz/translation tests and both real-browser suites. Successful builds upload the static game and screenshots, then deploy to GitHub Pages. Check the publishing step, not only the build. Repository Settings > Pages > Source must remain **GitHub Actions**. No personal token is needed for normal deployment; generated files are not committed.
-
-A future Capacitor Android shell can reuse the same static site and WASM. This release does not add an APK, signing keys, cloud saves or a backend. Android device/offline testing, safe areas, navigation, migrations and debug APK CI remain a separate milestone.
+The Android roadmap remains a separate milestone: a Capacitor shell bundling the same UI and WASM, device/offline tests, safe areas/back navigation, migration, and debug APK CI. No APK or signing key is included. Release signing belongs in user-controlled secrets.
 
 ## License
 
-The existing [LICENSE](LICENSE) is preserved. Symbols and village artwork are original local SVG code. No art or game text is copied from the reference games.
+The original [LICENSE](LICENSE) is preserved. Sigils and village artwork are local original vector code; no art or game text is copied from the reference games.
