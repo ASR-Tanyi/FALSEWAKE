@@ -5,7 +5,7 @@
 .nf-objective{font-size:13px;line-height:1.9;color:#c5c7b3;margin:-8px 0 18px;max-width:850px}
 
 /* Case selection is ordinary navigation, not a hidden-role hint. */
-.nf-library{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 25px}
+.nf-library{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 25px}
 .nf-case-card{display:flex;gap:16px;align-items:center;text-align:left;padding:17px 20px;background:#192223;border:1px solid var(--line);border-radius:6px;color:#b9c3b5;min-width:0;min-height:94px;cursor:pointer}
 .nf-case-card.active{background:linear-gradient(120deg,#2d3027,#1b2727);border-color:#a78e59}
 .nf-case-symbol{display:grid;place-items:center;border:1px solid #766b4b4f;border-radius:50%;width:50px;height:50px;flex-shrink:0;color:#c5af7f}
@@ -17,5 +17,5 @@
 .nf-threat{display:flex;gap:12px;align-items:flex-start;padding:14px 18px;border-left:2px solid #c99d6d;background:#44312133;color:#d3c3a6;font-size:13px;line-height:1.8;margin:0 0 18px}
 .nf-threat .icon{width:25px;height:25px;flex-shrink:0}
 .nf-promo-links{display:flex;flex-direction:column;gap:10px;min-width:180px}
-@media(max-width:690px){.nf-library{gap:8px}.nf-case-card{padding:12px;gap:9px;align-items:flex-start}.nf-case-symbol{width:30px;height:30px}.nf-case-symbol .icon{width:20px;height:20px}.nf-case-copy strong{font-size:17px}.nf-case-copy small{font-size:8px;letter-spacing:.8px}.nf-case-status{font-size:10px}.nf-threat{font-size:12px}.nf-library .nf-case-card{min-height:108px}}
-@media(max-width:370px){.nf-case-card{flex-direction:column;gap:8px}.nf-case-copy strong{font-size:17px}}
+@media(max-width:690px){.nf-library{grid-template-columns:1fr;gap:6px}.nf-case-card{padding:12px;gap:9px;align-items:flex-start}.nf-case-symbol{width:30px;height:30px}.nf-case-symbol .icon{width:20px;height:20px}.nf-case-copy strong{font-size:17px}.nf-case-copy small{font-size:8px;letter-spacing:.8px}.nf-case-status{font-size:10px}.nf-threat{font-size:12px}.nf-library .nf-case-card{min-height:56px;align-items:center}.nf-case-copy{display:grid;grid-template-columns:1fr auto;flex:1;align-items:center}.nf-case-copy small{grid-column:1}.nf-case-copy strong{grid-column:1}.nf-case-status{grid-column:2;grid-row:1/3;margin-left:8px}}
+@media(max-width:370px){.nf-case-card{gap:8px}.nf-case-copy strong{font-size:17px}}

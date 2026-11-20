@@ -1,9 +1,9 @@
 // Presentation adapter only. Rules AND evidence replay live in nightfall.wasm.
 import {t} from './i18n.js';
-import {nightfallCase} from './nightfall-cases.js';
+import {NIGHTFALL_CASES,nightfallCase} from './nightfall-cases.js';
 import {ERRORS as BASE_ERRORS} from './engine.js';
 const ERRORS=[...BASE_ERRORS,
- 'Only certified helpers may act in this investigation.',
+ 'Only helpers may use powers in this investigation.',
  'Both nights are over. Reach your verdict before another night.',
  'Choose exactly three of the four suspects.',
  'Keep everyone alive through two nights before submitting a verdict.',
@@ -16,7 +16,10 @@ export class NightfallEngine {
   if(api.fn_version()!==1)throw Error(t('Incompatible engine version.'));
   this.api=api;this.history=[];this.reset();
  }
- get caseId(){return this.api.fn_state(10)===2?'hollow-ward':'warded-lantern';}
+ get caseId(){
+  const number=this.api.fn_state(10);
+  return NIGHTFALL_CASES.find(entry=>entry.number===number)?.id;
+ }
  reset(caseId=this.caseId){
   const entry=nightfallCase(caseId);
   if(!entry)throw Error(t('Unknown Nightfall investigation.'));

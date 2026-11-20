@@ -26,7 +26,7 @@ int main(){
  for(int i=0;i<fw::size;++i)if(fw::events[i].kind==fw::WardRemoved){removal=true;assert(fw::events[i].source==-1);}
  assert(removal);
  // Selection rejects unknown IDs atomically, and legacy reset still means case 1.
- int n=fw::size;assert(fn_select(3)==1&&fn_state(10)==2&&fw::size==n);
+ int n=fw::size;assert(fn_select(4)==1&&fn_state(10)==2&&fw::size==n);
  fn_reset();assert(fn_state(10)==1);
  // A dead saboteur no longer strips protection (shared-core source-death semantics).
  fn_select(2);fw::p[fw::living_role(fw::Wardbreaker)].alive=0;

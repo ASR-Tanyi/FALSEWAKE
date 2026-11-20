@@ -85,10 +85,10 @@ export default [
   "囁く者の攻撃前に標的の護符を除去します。免疫は除去しません。"
  ],
  [
-  "A removed Ward never blocks the attack. Removal is not consumption. Available in The hollow ward.",
-  "被移除的护符不能阻挡攻击。移除不等于抵挡时的消耗。出现于《空心护符》。",
-  "Una protección retirada no bloquea el ataque. Retirarla no es consumirla. Disponible en La protección vacía.",
-  "除去された護符は攻撃を防げません。除去と防御による消費は別です。『空の護符』に登場します。"
+  "With their Ward broken, the victim must survive the attack through immunity.",
+  "护符被破坏后，受害者只能靠免疫能力在袭击中存活。",
+  "Una vez rota la protección, la víctima necesita inmunidad para sobrevivir al ataque.",
+  "護符を壊された人が襲撃を生き延びるには、免疫が必要です。"
  ],
  [
   "{target}'s Ward was removed before the attack. It did not block anything.",

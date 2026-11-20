@@ -6,29 +6,35 @@ A single-player deduction game where a truthful witness can be Evil and an innoc
 
 **[Play Nightfall](https://asr-tanyi.github.io/FALSEWAKE/nightfall.html)** | [Sealed casebook](https://asr-tanyi.github.io/FALSEWAKE/casebook.html) | [Night sandbox](https://asr-tanyi.github.io/FALSEWAKE/) | [Plan](plan.md) | [CI](https://github.com/ASR-Tanyi/FALSEWAKE/actions/workflows/ci.yml)
 
-## New in v0.6: The hollow ward
+## New in v0.7 — The borrowed light
 
-The second Nightfall investigation adds **Wardbreaker**: an enemy who removes the intended victim's Ward before the Whisperer attacks. Removal is not consumption, and a Ward is not immunity. The public charter replaces Rotmonger with Wardbreaker; timing now changes which protections will work.
+Rain has blurred one entry in the watch register. Everyone knows #12 is Good. Their role is the open question. Use the Guild Auditor to check the witness, then decide what their lantern readings tell you about the four suspects.
 
-**[Play chapter 02](https://asr-tanyi.github.io/FALSEWAKE/nightfall.html#case=hollow-ward)**. A chapter selector tracks each investigation's local status. Switch freely without losing the other case's actions, notes or pinned evidence. Each case has its own save and explicit replay case ID. All new text is available in English, Simplified Chinese, Spanish and Japanese.
+**[Play chapter 03](https://asr-tanyi.github.io/FALSEWAKE/nightfall.html#case=borrowed-light)** · [Public rules and strategy proof](docs/borrowed-light.md)
 
-Native tests and an independent model verify a safe, observation-based strategy in every one of chapter 02's 24 permitted initial arrangements, within the action budget, without deaths or Resolve loss. The enemy trio is determined; Wardbreaker and Whisperer can remain interchangeable. This is an authored teaching case, not a randomly generated or unrestricted village. [Exact rules, proof scope and compatibility](docs/hollow-ward.md).
+Chapter 03 has its own save, hints and replay ID in English, Simplified Chinese, Spanish and Japanese. A safe strategy is checked in all 48 starting arrangements allowed by its charter. The game plays one authored arrangement. The analyst considers them all.
 
 ## Three modes
 
-**Nightfall:** two three-day/two-night investigations with certified helpers, four suspects, immutable timelines, notes, pins, hints, optional evidence-only analysis and replay import/export. Chapter 01, *The warded lantern*, teaches why protection does not make a rescued investigator reliable, and why cleansing must precede a reading. Its original rules, save and 24-arrangement proof are unchanged. [Chapter 01 rules](docs/nightfall.md).
+**Nightfall** has three investigations. Each lasts three days and two nights. Keep the village alive, compare the timeline and identify the three enemies. Each chapter supports notes, pins, hints, evidence analysis and replay import/export.
+
+| Chapter | What to investigate |
+| --- | --- |
+| [01 · The warded lantern](docs/nightfall.md) | Can a rescued witness give a reliable reading at dawn? |
+| [02 · The hollow ward](docs/hollow-ward.md) | Who can survive when Wardbreaker removes a Ward before the attack? |
+| [03 · The borrowed light](docs/borrowed-light.md) | How should you read the evidence when a Good witness's role is uncertain? |
 
 **Sealed casebook:** two fixed-dawn cases. Broad clues report presence rather than exact totals; focused clues can be more precise. Find three enemies while explaining Good Drunk/Devilmask effects. Independent exhaustive validation covers 1,980 assignments in case 01 and 15,840 in case 02. Full evidence determines the enemy trio and Good Burden positions, not necessarily every enemy subtype. [Rules](docs/sealed-cases.md).
 
-**Night sandbox:** four investigations and one optional execution per day, three Resolve, attacks, Wards, marks, Taint, death reveals and endings. The roster is fixed. **New disguises** changes enemy claims with a deterministic 90% unused / 10% copied-claim branch per enemy. The sandbox has no general uniqueness or win-policy proof. Wardbreaker is chapter-02-only, not added to its roster or bluff pool. [Rules](docs/rules-v04.md).
+**Night sandbox:** four investigations and one optional execution per day, three Resolve, attacks, Wards, marks, Taint, death reveals and endings. The roster is fixed. **New disguises** changes enemy claims with a deterministic 90% unused / 10% copied-claim branch per enemy. The sandbox has no general uniqueness or win-policy proof. Wardbreaker appears in Nightfall chapters 02 and 03. [Rules](docs/rules-v04.md).
 
 All modes use #01-#12 and claim-based role sigils. Raw information scopes exclude the speaker. Ordinary readings see appearances, not True Evil. A truthful observation can describe a disguise. Old reports retain their original targets and time.
 
 ## Languages and saves
 
-The header selector switches English, Simplified Chinese, Spanish and Japanese without resetting progress. Supported `?lang=` parameters take priority over saved preference, browser languages, then English. Notes remain exactly as written. [Translation maintenance](docs/i18n.md). New chapter text is in `web/locales/hollow.js`.
+The header selector switches English, Simplified Chinese, Spanish and Japanese without resetting progress. Supported `?lang=` parameters take priority over saved preference, browser languages, then English. Notes remain exactly as written. [Translation maintenance](docs/i18n.md). Chapter 03 text is in `web/locales/borrowed.js`.
 
-Nightfall chapter 01 keeps `falsewake.nightfall.v1`; chapter 02 adds `falsewake.nightfall.v1.hollow-ward`. Existing sandbox, sealed, older v1 slots and `falsewake.language.v1` remain untouched. Malformed cross-case imports restore the exact previous case and history. Chapter statuses are local navigation indicators, not server achievements. Reset affects only the selected investigation.
+Nightfall stores each chapter in its own slot, using `falsewake.nightfall.v1`, `falsewake.nightfall.v1.hollow-ward` and `falsewake.nightfall.v1.borrowed-light`. Existing sandbox, sealed, older v1 slots and `falsewake.language.v1` remain untouched. Malformed cross-case imports restore the exact previous case and history. Chapter statuses are local navigation indicators, not server achievements. Reset affects only the selected investigation.
 
 ## Local development
 
@@ -48,7 +54,7 @@ Open `http://127.0.0.1:4173`. No npm install is needed. `CXX`, `CHROME` and `POR
 npm run build          # Compile the three WASM modules and assemble dist/
 npm test               # All native sanitizer, WASM, reference, replay, fuzz and i18n suites
 npm run test:browser   # Real HTTP Chrome flows for all modes and four languages
-npm run test:nightfall # Both Nightfall cases, including their proof policies
+npm run test:nightfall # All three Nightfall cases and their strategy proofs
 npm run test:cases     # Sealed-case proofs
 npm run preview        # Serve an existing build
 ```
@@ -59,7 +65,7 @@ Browser tests fail explicitly when local HTTP navigation is blocked. CI runs the
 
 `core/engine.cpp` is the shared sandbox/Nightfall simulation. `core/cases.cpp` contains the sealed-case solver. `core/nightfall.cpp` supplies bounded missions and an analyst that replays only public-rule worlds against public observations. The cores import no DOM, network, filesystem, clock or allocator. Independent JavaScript models exist only in tests, never in the shipped game.
 
-Nightfall ABI v1 is extended with `fn_select(1|2)` and state field 10; original `fn_reset()` still selects chapter 01. Existing snapshots/replay schemas remain compatible. Chapter metadata in the browser contains no hidden answers. Browser-local WASM is not an anti-cheat barrier; deliberate source/memory inspection can reveal single-player secrets.
+Nightfall ABI v1 accepts chapter numbers 1, 2 and 3 through `fn_select`. State field 10 returns the active chapter. The original `fn_reset()` selects chapter 01. Existing snapshots/replay schemas remain compatible. Chapter metadata in the browser contains no hidden answers. Browser-local WASM is not an anti-cheat barrier; deliberate source/memory inspection can reveal single-player secrets.
 
 ## CI and Android
 

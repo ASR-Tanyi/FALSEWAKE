@@ -52,7 +52,7 @@ export const ROLES = {
 // Nightfall-only roles do not silently expand the sandbox script or bluff pool.
 export const NIGHTFALL_ROLES={...ROLES,
  20:{name:'Wardbreaker',family:'Agent',icon:'broken-shield',passive:true,
-    text:"Before the Whisperer attacks, remove the intended victim's Ward. This does not remove immunity.",hint:'A removed Ward never blocks the attack. Removal is not consumption. Available in The hollow ward.'}
+    text:"Before the Whisperer attacks, remove the intended victim's Ward. This does not remove immunity.",hint:'With their Ward broken, the victim must survive the attack through immunity.'}
 };
 export const name=seatNumber;
 export const isReport=e=>[2,3,4,8,16,17,18,19,20].includes(e.kind);

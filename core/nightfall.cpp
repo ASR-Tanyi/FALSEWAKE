@@ -4,6 +4,7 @@
 namespace nf {
 constexpr int CAP=32, POOL=(1<<2)|(1<<3)|(1<<6)|(1<<9), ALL=(1<<12)-1;
 constexpr int suspects[]={2,3,6,9};
+constexpr int BorrowedLight=3, ReaderSeat=11;
 constexpr int hidden[][4]={
     {fw::Smokescreen,fw::Drunk,fw::Rotmonger,fw::Whisperer},
     {fw::Smokescreen,fw::Drunk,fw::Wardbreaker,fw::Whisperer}
@@ -38,18 +39,28 @@ void restore(const Frame &f){
     for(int i=0;i<rejectedSize;++i)rejected[i]=f.wrong[i];
 }
 // Internal only. Neither WASM exports nor replay files accept a hidden world.
-void reset_world(int a,int b,int c,int d){
+void reset_world(int a,int b,int c,int d,bool drunkReader=false){
     fw::reset(0);const int order[]={a,b,c,d};
-    for(int n=0;n<4;++n){auto &p=fw::p[suspects[n]];p.role=hidden[activeCase-1][order[n]];p.evil=p.role!=fw::Drunk;}
+    const auto &roster=hidden[activeCase==1?0:1];
+    for(int n=0;n<4;++n){
+        auto &p=fw::p[suspects[n]];
+        p.role=roster[order[n]];p.evil=p.role!=fw::Drunk;
+        if(activeCase==BorrowedLight && drunkReader && !p.evil){
+            // These two Good seats trade identities and keep their public claims.
+            p.role=fw::Lantern;
+            fw::p[ReaderSeat].role=fw::Drunk;
+        }
+    }
     fw::size=0;fw::p[0].asked=0;
     fw::p[11].marked=1;fw::emit(Charter,-1,11,1,1<<11);
     size=0;rejectedSize=0;dirty=true;
 }
 int select_case(int id){
-    if(id<1||id>2)return 1;
+    if(id<1||id>BorrowedLight)return 1;
     activeCase=id;
     if(id==1)reset_world(0,1,2,3);
-    else reset_world(2,3,1,0);
+    else if(id==2)reset_world(2,3,1,0);
+    else reset_world(0,2,3,1,true);
     return 0;
 }
 // Preserve the original v1 reset contract for old first-case clients.
@@ -96,17 +107,20 @@ void analyze(){
     if(!dirty)return;
     Frame live;capture(live);
     int count=0,distinct=0,seen[4]={},good=ALL,evil=ALL,drunk=ALL,smoke=ALL;
+    const int readerConditions=activeCase==BorrowedLight?2:1;
+    for(int condition=0;condition<readerConditions;++condition)
     for(int a=0;a<4;++a)for(int b=0;b<4;++b)if(b!=a)
     for(int c=0;c<4;++c)if(c!=a&&c!=b)for(int d=0;d<4;++d)if(d!=a&&d!=b&&d!=c){
-        reset_world(a,b,c,d);bool valid=true;
+        reset_world(a,b,c,d,condition!=0);bool valid=true;
         for(int i=0;i<live.commandSize;++i){const auto &cmd=live.commands[i];
             if(command(cmd.op,cmd.source,cmd.target)){valid=false;break;}}
         if(!valid||!trace_matches(live))continue;
-        ++count;int e=0,dr=0,sm=0,drIndex=0;
-        for(int n=0;n<4;++n){int i=suspects[n];if(fw::p[i].evil)e|=fw::bit(i);
-            if(fw::p[i].role==fw::Drunk){dr=fw::bit(i);drIndex=n;}
+        ++count;int e=0,dr=fw::p[ReaderSeat].role==fw::Drunk?fw::bit(ReaderSeat):0,sm=0;
+        for(int n=0;n<4;++n){int i=suspects[n];
+            if(fw::p[i].evil)e|=fw::bit(i);
+            else if(!seen[n]){seen[n]=1;++distinct;} // One Good suspect identifies the trio.
+            if(fw::p[i].role==fw::Drunk)dr=fw::bit(i);
             if(fw::p[i].role==fw::Smokescreen)sm=fw::bit(i);}
-        if(!seen[drIndex]){seen[drIndex]=1;++distinct;}
         good&=ALL^e;evil&=e;drunk&=dr;smoke&=sm;
     }
     restore(live);worlds=count;teams=distinct;

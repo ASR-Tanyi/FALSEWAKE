@@ -61,7 +61,7 @@ test('case selection, restarts and cross-case replays are atomic and preserve th
  const e=await fresh('warded-lantern');e.command(2,1,11);e.command(4);const old=e.export(),view=e.snapshot();
  assert.equal(old.caseId,'warded-lantern');assert.equal(old.version,1);
  for(const id of ['unknown',null,2]){assert.throws(()=>e.reset(id));assert.deepEqual(e.snapshot(),view);}
- assert.equal(e.api.fn_select(3),1);assert.deepEqual(e.snapshot(),view);
+ assert.equal(e.api.fn_select(4),1);assert.deepEqual(e.snapshot(),view);
  assert.throws(()=>e.replay({version:1,kind:'nightfall',caseId:'hollow-ward',commands:[[2,10,4],[2,10,4]]}));
  assert.equal(e.caseId,'warded-lantern');assert.deepEqual(e.snapshot(),view);assert.deepEqual(e.export(),old);
  e.reset('hollow-ward');e.command(2,10,4);const second=e.export(),secondView=e.snapshot();
